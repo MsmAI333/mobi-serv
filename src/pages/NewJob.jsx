@@ -132,10 +132,6 @@ const NewJob = () => {
               <Input id="emailAddress" type="email" placeholder="Enter email address" required />
             </div>
             <div>
-              <Label htmlFor="advancePayment">Advance Payment (Optional)</Label>
-              <Input id="advancePayment" type="number" placeholder="Enter advance payment amount" />
-            </div>
-            <div>
               <Label htmlFor="deviceType">Device Type</Label>
               <Select onValueChange={setDeviceType} required>
                 <SelectTrigger>
@@ -218,6 +214,10 @@ const NewJob = () => {
                   <img src={devicePhoto} alt="Device" className="max-w-full h-auto" />
                 </div>
               )}
+            </div>
+            <div>
+              <Label htmlFor="advancePayment">Advance Payment (Optional)</Label>
+              <Input id="advancePayment" type="number" placeholder="Enter advance payment amount" />
             </div>
             <div className="flex justify-end">
               <Button type="submit">Create Job Sheet</Button>
