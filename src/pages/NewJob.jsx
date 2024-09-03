@@ -4,9 +4,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera } from 'lucide-react';
+
+const ConditionButton = ({ item, condition, setCondition }) => {
+  return (
+    <div className="flex flex-col space-y-2">
+      <span className="text-sm font-medium">{item}</span>
+      <div className="flex space-x-2">
+        <Button
+          type="button"
+          variant={condition === 'Yes' ? 'default' : 'outline'}
+          onClick={() => setCondition('Yes')}
+          className="w-16"
+        >
+          Yes
+        </Button>
+        <Button
+          type="button"
+          variant={condition === 'No' ? 'default' : 'outline'}
+          onClick={() => setCondition('No')}
+          className="w-16"
+        >
+          No
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 const NewJob = () => {
   const navigate = useNavigate();
@@ -15,6 +40,14 @@ const NewJob = () => {
   const fileInputRef = useRef(null);
   const [availableCameras, setAvailableCameras] = useState([]);
   const [selectedCamera, setSelectedCamera] = useState('');
+  const [deviceConditions, setDeviceConditions] = useState({
+    Charging: '',
+    Battery: '',
+    Screen: '',
+    Audio: '',
+    WiFi: '',
+    Camera: ''
+  });
 
   const commonProblems = {
     phone: [
@@ -32,7 +65,7 @@ const NewJob = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Here you would typically save the job data
-    console.log('Job submitted');
+    console.log('Job submitted', { deviceConditions });
     navigate('/');
   };
 
@@ -132,13 +165,13 @@ const NewJob = () => {
             <div>
               <Label>Device Condition Checklist</Label>
               <div className="grid grid-cols-2 gap-4 mt-2">
-                {['Charging', 'Battery', 'Screen', 'Audio', 'Wi-Fi', 'Camera'].map((item) => (
-                  <div key={item} className="flex items-center space-x-2">
-                    <Checkbox id={item} />
-                    <label htmlFor={item} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      {item}
-                    </label>
-                  </div>
+                {Object.keys(deviceConditions).map((item) => (
+                  <ConditionButton
+                    key={item}
+                    item={item}
+                    condition={deviceConditions[item]}
+                    setCondition={(value) => setDeviceConditions(prev => ({ ...prev, [item]: value }))}
+                  />
                 ))}
               </div>
             </div>
