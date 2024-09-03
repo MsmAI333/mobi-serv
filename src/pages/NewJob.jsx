@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const NewJob = () => {
   const navigate = useNavigate();
@@ -32,10 +33,12 @@ const NewJob = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
-        <h2 className="text-2xl font-bold mb-6 text-center">Add New Job</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-6">
+      <Card className="max-w-3xl mx-auto">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">Add New Job</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <Label htmlFor="customerName">Customer Name</Label>
               <Input id="customerName" placeholder="Enter customer name" required />
@@ -83,9 +86,9 @@ const NewJob = () => {
             <div className="flex justify-end">
               <Button type="submit">Create Job Sheet</Button>
             </div>
-          </div>
-        </form>
-      </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
