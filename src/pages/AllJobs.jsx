@@ -1,41 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Navigation from '../components/Navigation';
 
-const StatusButton = ({ status, jobId }) => {
+const AllJobs = () => {
   const navigate = useNavigate();
-  const getStatusColor = () => {
-    switch (status.toLowerCase()) {
-      case 'started':
-        return 'bg-green-500 hover:bg-green-600';
-      case 'ongoing':
-        return 'bg-yellow-500 hover:bg-yellow-600';
-      case 'completed':
-        return 'bg-blue-500 hover:bg-blue-600';
-      default:
-        return 'bg-gray-500 hover:bg-gray-600';
-    }
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialStatus = queryParams.get('status') || '';
+  const initialDate = queryParams.get('date') || '';
+
+  const [filters, setFilters] = useState({
+    id: '',
+    customer: '',
+    device: '',
+    status: initialStatus,
+    date: initialDate,
+  });
+
+  const jobs = [
+    { id: 1, customer: 'John Doe', device: 'iPhone 12', status: 'Started', customerId: 'CUST001', date: '2023-03-15' },
+    { id: 2, customer: 'Jane Smith', device: 'Samsung Galaxy S21', status: 'Ongoing', customerId: 'CUST002', date: '2023-03-16' },
+    { id: 3, customer: 'Bob Johnson', device: 'MacBook Pro', status: 'Completed', customerId: 'CUST003', date: '2023-03-17' },
+  ];
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  return (
-    <Button 
-      className={`${getStatusColor()} text-white`}
-      onClick={() => navigate(`/job-details/${jobId}`)}
-    >
-      {status}
-    </Button>
-  );
-};
-
-const AllJobs = () => {
-  const jobs = [
-    { id: 1, customer: 'John Doe', device: 'iPhone 12', status: 'Started', customerId: 'CUST001' },
-    { id: 2, customer: 'Jane Smith', device: 'Samsung Galaxy S21', status: 'Ongoing', customerId: 'CUST002' },
-    { id: 3, customer: 'Bob Johnson', device: 'MacBook Pro', status: 'Completed', customerId: 'CUST003' },
-  ];
+  const filteredJobs = jobs.filter(job => {
+    return Object.entries(filters).every(([key, value]) => {
+      if (!value) return true;
+      if (key === 'date' && value === 'today') {
+        return job.date === new Date().toISOString().split('T')[0];
+      }
+      return job[key].toLowerCase().includes(value.toLowerCase());
+    });
+  });
 
   return (
     <div className="container mx-auto py-10">
@@ -47,6 +52,49 @@ const AllJobs = () => {
           </div>
         </div>
       </header>
+      <div className="mb-4 grid grid-cols-5 gap-4">
+        <Input
+          placeholder="Filter by ID"
+          value={filters.id}
+          onChange={(e) => handleFilterChange('id', e.target.value)}
+        />
+        <Input
+          placeholder="Filter by Customer"
+          value={filters.customer}
+          onChange={(e) => handleFilterChange('customer', e.target.value)}
+        />
+        <Input
+          placeholder="Filter by Device"
+          value={filters.device}
+          onChange={(e) => handleFilterChange('device', e.target.value)}
+        />
+        <Select
+          value={filters.status}
+          onValueChange={(value) => handleFilterChange('status', value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Filter by Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All</SelectItem>
+            <SelectItem value="Started">Started</SelectItem>
+            <SelectItem value="Ongoing">Ongoing</SelectItem>
+            <SelectItem value="Completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={filters.date}
+          onValueChange={(value) => handleFilterChange('date', value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Filter by Date" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All</SelectItem>
+            <SelectItem value="today">Today</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -58,7 +106,7 @@ const AllJobs = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {jobs.map((job) => (
+          {filteredJobs.map((job) => (
             <TableRow key={job.id}>
               <TableCell>{job.id}</TableCell>
               <TableCell>
@@ -68,7 +116,12 @@ const AllJobs = () => {
               </TableCell>
               <TableCell>{job.device}</TableCell>
               <TableCell>
-                <StatusButton status={job.status} jobId={job.id} />
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate(`/job-details/${job.id}`)}
+                >
+                  {job.status}
+                </Button>
               </TableCell>
               <TableCell>
                 <Link to={`/edit-job/${job.id}`}>

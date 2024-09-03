@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Navigation from '../components/Navigation';
 
 const ProductAnalysis = () => {
   const frequentRepairs = [
@@ -29,7 +30,14 @@ const ProductAnalysis = () => {
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-5">Product Analysis</h1>
+      <header className="bg-white dark:bg-gray-800 shadow mb-8">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Product Analysis</h1>
+            <Navigation />
+          </div>
+        </div>
+      </header>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>

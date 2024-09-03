@@ -5,6 +5,8 @@ import NewJob from "./pages/NewJob.jsx";
 import ProductAnalysis from "./pages/ProductAnalysis.jsx";
 import Customers from "./pages/Customers.jsx";
 import Login from "./pages/Login.jsx";
+import RevenueDetails from "./pages/RevenueDetails.jsx";
+import EditJob from "./pages/EditJob.jsx";
 
 export const navItems = [
   {
@@ -42,5 +44,17 @@ export const navItems = [
     to: "/login",
     icon: <UsersIcon className="h-4 w-4" />,
     page: <Login />,
+  },
+  {
+    title: "Revenue Details",
+    to: "/revenue-details",
+    icon: <BarChart2Icon className="h-4 w-4" />,
+    page: <RevenueDetails />,
+  },
+  {
+    title: "Edit Job",
+    to: "/edit-job/:id",
+    icon: <ListIcon className="h-4 w-4" />,
+    page: <EditJob />,
   },
 ];
