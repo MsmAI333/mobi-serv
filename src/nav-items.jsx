@@ -1,10 +1,9 @@
-import { HomeIcon, PlusCircleIcon } from "lucide-react";
+import { HomeIcon, ListIcon, UsersIcon, BarChart2Icon, PlusCircleIcon } from "lucide-react";
 import Index from "./pages/Index.jsx";
+import AllJobs from "./pages/AllJobs.jsx";
 import NewJob from "./pages/NewJob.jsx";
+import ProductAnalysis from "./pages/ProductAnalysis.jsx";
 
-/**
- * Central place for defining the navigation items. Used for navigation components and routing.
- */
 export const navItems = [
   {
     title: "Home",
@@ -13,9 +12,21 @@ export const navItems = [
     page: <Index />,
   },
   {
+    title: "All Jobs",
+    to: "/all-jobs",
+    icon: <ListIcon className="h-4 w-4" />,
+    page: <AllJobs />,
+  },
+  {
     title: "New Job",
     to: "/new-job",
     icon: <PlusCircleIcon className="h-4 w-4" />,
     page: <NewJob />,
+  },
+  {
+    title: "Product Analysis",
+    to: "/product-analysis",
+    icon: <BarChart2Icon className="h-4 w-4" />,
+    page: <ProductAnalysis />,
   },
 ];
