@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FcGoogle } from 'react-icons/fc';
+import { LogIn } from 'lucide-react';
 import Navigation from '../components/Navigation';
 
 const Login = () => {
@@ -26,7 +26,7 @@ const Login = () => {
               onClick={handleGoogleLogin}
               className="w-full flex justify-center items-center"
             >
-              <FcGoogle className="mr-2" />
+              <LogIn className="mr-2 h-4 w-4" />
               Sign in with Google
             </Button>
           </CardContent>
