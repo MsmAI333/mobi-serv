@@ -2,10 +2,11 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navigation from '../components/Navigation';
 
-const StatusButton = ({ status }) => {
+const StatusButton = ({ status, jobId }) => {
+  const navigate = useNavigate();
   const getStatusColor = () => {
     switch (status.toLowerCase()) {
       case 'started':
@@ -20,7 +21,10 @@ const StatusButton = ({ status }) => {
   };
 
   return (
-    <Button className={`${getStatusColor()} text-white`}>
+    <Button 
+      className={`${getStatusColor()} text-white`}
+      onClick={() => navigate(`/job-details/${jobId}`)}
+    >
       {status}
     </Button>
   );
@@ -64,7 +68,7 @@ const AllJobs = () => {
               </TableCell>
               <TableCell>{job.device}</TableCell>
               <TableCell>
-                <StatusButton status={job.status} />
+                <StatusButton status={job.status} jobId={job.id} />
               </TableCell>
               <TableCell>
                 <Link to={`/edit-job/${job.id}`}>

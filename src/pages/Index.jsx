@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,14 +7,25 @@ import { PlusCircle, Smartphone, Laptop, BarChart2, Search, User } from 'lucide-
 import JobList from '../components/JobList';
 import Analytics from '../components/Analytics';
 import Navigation from '../components/Navigation';
+import { useQuery } from '@tanstack/react-query';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const { data: searchResults, refetch } = useQuery({
+    queryKey: ['search', searchQuery],
+    queryFn: () => fetchSearchResults(searchQuery),
+    enabled: false,
+  });
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Implement search functionality here
-    console.log('Searching for:', searchQuery);
+    refetch();
+  };
+
+  const handleSearchResultClick = (customerId) => {
+    navigate(`/customers/${customerId}`);
   };
 
   return (
@@ -24,7 +35,7 @@ const Index = () => {
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Mobi Serve</h1>
             <div className="flex items-center space-x-4">
-              <Button variant="ghost">
+              <Button variant="ghost" onClick={() => navigate('/login')}>
                 <User className="mr-2 h-4 w-4" />
                 Hello, User
               </Button>
@@ -50,21 +61,36 @@ const Index = () => {
                 Search
               </Button>
             </form>
+            {searchResults && searchResults.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
+                {searchResults.map((result) => (
+                  <div
+                    key={result.id}
+                    className="p-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => handleSearchResultClick(result.id)}
+                  >
+                    {result.name} - {result.phone}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </header>
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
-                <Smartphone className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">1,234</div>
-              </CardContent>
-            </Card>
+            <Link to="/all-jobs">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
+                  <Smartphone className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">1,234</div>
+                </CardContent>
+              </Card>
+            </Link>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Ongoing Jobs</CardTitle>
