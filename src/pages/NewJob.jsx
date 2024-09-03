@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera } from 'lucide-react';
+import Navigation from '../components/Navigation';
 
 const ConditionButton = ({ item, condition, setCondition }) => {
   return (
@@ -48,6 +49,10 @@ const NewJob = () => {
     WiFi: '',
     Camera: ''
   });
+  const [customerName, setCustomerName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [emailAddress, setEmailAddress] = useState('');
+  const [existingCustomer, setExistingCustomer] = useState(null);
 
   const commonProblems = {
     phone: [
@@ -62,10 +67,48 @@ const NewJob = () => {
     ]
   };
 
+  useEffect(() => {
+    // Simulating a check for existing customer
+    const checkExistingCustomer = () => {
+      // This would typically be an API call to your backend
+      const mockCustomers = [
+        { id: 'CUST001', name: 'John Doe', phone: '123-456-7890', email: 'john@example.com' },
+        { id: 'CUST002', name: 'Jane Smith', phone: '234-567-8901', email: 'jane@example.com' },
+      ];
+
+      const found = mockCustomers.find(c => 
+        c.name.toLowerCase() === customerName.toLowerCase() ||
+        c.phone === phoneNumber ||
+        c.email.toLowerCase() === emailAddress.toLowerCase()
+      );
+
+      if (found) {
+        setExistingCustomer(found);
+        setCustomerName(found.name);
+        setPhoneNumber(found.phone);
+        setEmailAddress(found.email);
+      } else {
+        setExistingCustomer(null);
+      }
+    };
+
+    if (customerName || phoneNumber || emailAddress) {
+      checkExistingCustomer();
+    }
+  }, [customerName, phoneNumber, emailAddress]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // Here you would typically save the job data
-    console.log('Job submitted', { deviceConditions });
+    console.log('Job submitted', { 
+      customerName, 
+      phoneNumber, 
+      emailAddress, 
+      deviceType, 
+      deviceConditions,
+      devicePhoto
+    });
+    // TODO: Implement saving to Excel and PDF
     navigate('/');
   };
 
@@ -116,21 +159,48 @@ const NewJob = () => {
       <Card className="max-w-3xl mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">Add New Job</CardTitle>
+          <Navigation />
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <Label htmlFor="customerName">Customer Name</Label>
-              <Input id="customerName" placeholder="Enter customer name" required />
+              <Input 
+                id="customerName" 
+                value={customerName} 
+                onChange={(e) => setCustomerName(e.target.value)} 
+                placeholder="Enter customer name" 
+                required 
+              />
             </div>
             <div>
               <Label htmlFor="phoneNumber">Phone Number</Label>
-              <Input id="phoneNumber" type="tel" placeholder="Enter phone number" required />
+              <Input 
+                id="phoneNumber" 
+                type="tel" 
+                value={phoneNumber} 
+                onChange={(e) => setPhoneNumber(e.target.value)} 
+                placeholder="Enter phone number" 
+                required 
+              />
             </div>
             <div>
               <Label htmlFor="emailAddress">Email Address</Label>
-              <Input id="emailAddress" type="email" placeholder="Enter email address" required />
+              <Input 
+                id="emailAddress" 
+                type="email" 
+                value={emailAddress} 
+                onChange={(e) => setEmailAddress(e.target.value)} 
+                placeholder="Enter email address" 
+                required 
+              />
             </div>
+            {existingCustomer && (
+              <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4" role="alert">
+                <p className="font-bold">Existing Customer Found</p>
+                <p>Customer ID: {existingCustomer.id}</p>
+              </div>
+            )}
             <div>
               <Label htmlFor="deviceType">Device Type</Label>
               <Select onValueChange={setDeviceType} required>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,14 @@ import Analytics from '../components/Analytics';
 import Navigation from '../components/Navigation';
 
 const Index = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // Implement search functionality here
+    console.log('Searching for:', searchQuery);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <header className="bg-white dark:bg-gray-800 shadow">
@@ -29,14 +37,19 @@ const Index = () => {
           </div>
           <Navigation />
           <div className="mt-4">
-            <div className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <Input
                 type="text"
                 placeholder="Search by name, phone, email, or reference number"
                 className="pl-10 pr-4 py-2 w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            </div>
+              <Button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                Search
+              </Button>
+            </form>
           </div>
         </div>
       </header>
