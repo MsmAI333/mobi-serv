@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,7 +58,7 @@ const AllJobs = () => {
             <SelectValue placeholder="Filter by Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="Started">Started</SelectItem>
             <SelectItem value="Ongoing">Ongoing</SelectItem>
             <SelectItem value="Completed">Completed</SelectItem>
@@ -69,7 +69,7 @@ const AllJobs = () => {
             <SelectValue placeholder="Filter by Date" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="today">Today</SelectItem>
           </SelectContent>
         </Select>
