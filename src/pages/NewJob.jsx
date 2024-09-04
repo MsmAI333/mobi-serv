@@ -10,7 +10,7 @@ import Navigation from '../components/Navigation';
 import { useQuery, useMutation } from '@tanstack/react-query';
 
 const fetchCustomers = async () => {
-  // Simulating API call
+  // TODO: Replace this with actual API call to fetch data from Excel
   await new Promise(resolve => setTimeout(resolve, 1000));
   return [
     { id: 'CUST001', name: 'John Doe', phone: '123-456-7890', email: 'john@example.com' },
@@ -19,7 +19,7 @@ const fetchCustomers = async () => {
 };
 
 const submitJob = async (jobData) => {
-  // Simulating API call
+  // TODO: Replace this with actual API call to store data in Excel
   await new Promise(resolve => setTimeout(resolve, 1000));
   console.log('Job submitted:', jobData);
   return { success: true, id: 'JOB001' };

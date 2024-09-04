@@ -10,7 +10,7 @@ import Navigation from '../components/Navigation';
 import { useQuery } from '@tanstack/react-query';
 
 const fetchSearchResults = async (query) => {
-  // Simulating API call
+  // TODO: Replace this with actual API call to fetch data from Excel
   await new Promise(resolve => setTimeout(resolve, 1000));
   return [
     { id: 'CUST001', name: 'John Doe', phone: '123-456-7890' },
@@ -22,7 +22,7 @@ const fetchSearchResults = async (query) => {
 };
 
 const fetchDashboardData = async () => {
-  // Simulating API call
+  // TODO: Replace this with actual API call to fetch data from Excel
   await new Promise(resolve => setTimeout(resolve, 1000));
   return {
     totalJobs: 1234,
@@ -34,22 +34,23 @@ const fetchDashboardData = async () => {
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
   const navigate = useNavigate();
-
-  const { data: searchResults, refetch: refetchSearch } = useQuery({
-    queryKey: ['search', searchQuery],
-    queryFn: () => fetchSearchResults(searchQuery),
-    enabled: false,
-  });
 
   const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
     queryKey: ['dashboardData'],
     queryFn: fetchDashboardData,
   });
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    refetchSearch();
+  const handleSearch = async (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (query.length > 2) {
+      const results = await fetchSearchResults(query);
+      setSearchResults(results);
+    } else {
+      setSearchResults([]);
+    }
   };
 
   const handleSearchResultClick = (customerId) => {
@@ -77,21 +78,16 @@ const Index = () => {
             </div>
           </div>
           <Navigation />
-          <div className="mt-4">
-            <form onSubmit={handleSearch} className="relative">
-              <Input
-                type="text"
-                placeholder="Search by name, phone, email, or reference number"
-                className="pl-10 pr-4 py-2 w-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <Button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                Search
-              </Button>
-            </form>
-            {searchResults && searchResults.length > 0 && (
+          <div className="mt-4 relative">
+            <Input
+              type="text"
+              placeholder="Search by name, phone, email, or reference number"
+              className="pl-10 pr-4 py-2 w-full"
+              value={searchQuery}
+              onChange={handleSearch}
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            {searchResults.length > 0 && (
               <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
                 {searchResults.map((result) => (
                   <div

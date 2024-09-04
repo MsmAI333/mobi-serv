@@ -11,6 +11,7 @@ import Customers from "./pages/Customers.jsx";
 import Login from "./pages/Login.jsx";
 import RevenueDetails from "./pages/RevenueDetails.jsx";
 import EditJob from "./pages/EditJob.jsx";
+import TotalRevenueStatistics from "./pages/TotalRevenueStatistics.jsx";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/revenue-details" element={<RevenueDetails />} />
             <Route path="/edit-job/:id" element={<EditJob />} />
+            <Route path="/total-revenue-statistics" element={<TotalRevenueStatistics />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

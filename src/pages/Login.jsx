@@ -2,12 +2,37 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogIn } from 'lucide-react';
-import Navigation from '../components/Navigation';
+import { useNavigate } from 'react-router-dom';
+import { GoogleAuthProvider, signInWithPopup, getAuth } from 'firebase/auth';
+import { initializeApp } from 'firebase/app';
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
 const Login = () => {
-  const handleGoogleLogin = () => {
-    // Implement Google login logic here
-    console.log('Google login clicked');
+  const navigate = useNavigate();
+
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      console.log('Logged in user:', user);
+      navigate('/');
+    } catch (error) {
+      console.error('Error during Google sign in:', error);
+    }
   };
 
   return (
@@ -31,10 +56,6 @@ const Login = () => {
             </Button>
           </CardContent>
         </Card>
-      </div>
-      
-      <div className="mt-8">
-        <Navigation />
       </div>
     </div>
   );
