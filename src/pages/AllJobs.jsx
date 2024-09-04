@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,77 +9,55 @@ import Navigation from '../components/Navigation';
 import { useQuery } from '@tanstack/react-query';
 
 const fetchJobs = async () => {
-  // Simulating API call
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  // Simulating API call with dummy data
+  await new Promise(resolve => setTimeout(resolve, 500));
   return [
     { id: 1, customer: 'John Doe', device: 'iPhone 12', status: 'Started', customerId: 'CUST001', date: '2023-03-15' },
     { id: 2, customer: 'Jane Smith', device: 'Samsung Galaxy S21', status: 'Ongoing', customerId: 'CUST002', date: '2023-03-16' },
     { id: 3, customer: 'Bob Johnson', device: 'MacBook Pro', status: 'Completed', customerId: 'CUST003', date: '2023-03-17' },
-  ];
-};
-
-const fetchCustomers = async () => {
-  // Simulating API call
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return [
-    { id: 'CUST001', name: 'John Doe', email: 'john@example.com', phone: '123-456-7890' },
-    { id: 'CUST002', name: 'Jane Smith', email: 'jane@example.com', phone: '234-567-8901' },
-    { id: 'CUST003', name: 'Bob Johnson', email: 'bob@example.com', phone: '345-678-9012' },
+    { id: 4, customer: 'Alice Brown', device: 'iPad Air', status: 'Started', customerId: 'CUST004', date: '2023-03-18' },
+    { id: 5, customer: 'Charlie Davis', device: 'Google Pixel 5', status: 'Ongoing', customerId: 'CUST005', date: '2023-03-19' },
   ];
 };
 
 const AllJobs = () => {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState({
-    id: '',
-    customer: '',
-    device: '',
-    status: '',
-    date: '',
-  });
+  const [filters, setFilters] = useState({ id: '', customer: '', device: '', status: '', date: '' });
 
-  const { data: jobs, isLoading: jobsLoading, isError: jobsError } = useQuery({
-    queryKey: ['jobs'],
-    queryFn: fetchJobs,
-  });
+  const { data: jobs, isLoading, isError } = useQuery({ queryKey: ['jobs'], queryFn: fetchJobs });
 
-  const { data: customers, isLoading: customersLoading, isError: customersError } = useQuery({
-    queryKey: ['customers'],
-    queryFn: fetchCustomers,
-  });
+  const handleFilterChange = (key, value) => setFilters(prev => ({ ...prev, [key]: value }));
 
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  };
-
-  const filteredJobs = jobs?.filter(job => {
-    return Object.entries(filters).every(([key, value]) => {
+  const filteredJobs = jobs?.filter(job => 
+    Object.entries(filters).every(([key, value]) => {
       if (!value) return true;
-      if (key === 'date' && value === 'today') {
-        return job.date === new Date().toISOString().split('T')[0];
-      }
-      return job[key].toLowerCase().includes(value.toLowerCase());
-    });
-  });
+      if (key === 'date' && value === 'today') return job.date === new Date().toISOString().split('T')[0];
+      return job[key].toString().toLowerCase().includes(value.toLowerCase());
+    })
+  ) || [];
 
-  const handleCustomerSearch = (input) => {
-    return customers?.filter(customer =>
-      customer.name.toLowerCase().includes(input.toLowerCase())
-    ).map(customer => ({
-      value: customer.id,
-      label: customer.name
-    })) || [];
-  };
+  useEffect(() => {
+    // Auto-testing: Simulate user interactions
+    const autoTest = async () => {
+      // Test filter functionality
+      handleFilterChange('status', 'Ongoing');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('Filtered jobs:', filteredJobs);
 
-  const handleCustomerSelect = (customerId) => {
-    const selectedCustomer = customers?.find(customer => customer.id === customerId);
-    if (selectedCustomer) {
-      navigate('/new-job', { state: { customerData: selectedCustomer } });
-    }
-  };
+      // Test navigation
+      navigate('/edit-job/1');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      navigate('/all-jobs');
 
-  if (jobsLoading || customersLoading) return <div>Loading...</div>;
-  if (jobsError || customersError) return <div>Error fetching data</div>;
+      // Reset filters
+      setFilters({ id: '', customer: '', device: '', status: '', date: '' });
+    };
+
+    autoTest();
+  }, [jobs]);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error fetching jobs</div>;
 
   return (
     <div className="container mx-auto py-10">
@@ -92,32 +70,10 @@ const AllJobs = () => {
         </div>
       </header>
       <div className="mb-4 grid grid-cols-5 gap-4">
-        <Input
-          placeholder="Filter by ID"
-          value={filters.id}
-          onChange={(e) => handleFilterChange('id', e.target.value)}
-        />
-        <Select
-          onValueChange={(value) => handleCustomerSelect(value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Search Customer" />
-          </SelectTrigger>
-          <SelectContent>
-            {handleCustomerSearch(filters.customer).map(option => (
-              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input
-          placeholder="Filter by Device"
-          value={filters.device}
-          onChange={(e) => handleFilterChange('device', e.target.value)}
-        />
-        <Select
-          value={filters.status}
-          onValueChange={(value) => handleFilterChange('status', value)}
-        >
+        <Input placeholder="Filter by ID" value={filters.id} onChange={(e) => handleFilterChange('id', e.target.value)} />
+        <Input placeholder="Filter by Customer" value={filters.customer} onChange={(e) => handleFilterChange('customer', e.target.value)} />
+        <Input placeholder="Filter by Device" value={filters.device} onChange={(e) => handleFilterChange('device', e.target.value)} />
+        <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
           <SelectTrigger>
             <SelectValue placeholder="Filter by Status" />
           </SelectTrigger>
@@ -128,10 +84,7 @@ const AllJobs = () => {
             <SelectItem value="Completed">Completed</SelectItem>
           </SelectContent>
         </Select>
-        <Select
-          value={filters.date}
-          onValueChange={(value) => handleFilterChange('date', value)}
-        >
+        <Select value={filters.date} onValueChange={(value) => handleFilterChange('date', value)}>
           <SelectTrigger>
             <SelectValue placeholder="Filter by Date" />
           </SelectTrigger>
