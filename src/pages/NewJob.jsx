@@ -53,6 +53,7 @@ const NewJob = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [existingCustomer, setExistingCustomer] = useState(null);
+  const [selectedProblem, setSelectedProblem] = useState('');
 
   const commonProblems = {
     phone: [
@@ -68,9 +69,7 @@ const NewJob = () => {
   };
 
   useEffect(() => {
-    // Simulating a check for existing customer
     const checkExistingCustomer = () => {
-      // This would typically be an API call to your backend
       const mockCustomers = [
         { id: 'CUST001', name: 'John Doe', phone: '123-456-7890', email: 'john@example.com' },
         { id: 'CUST002', name: 'Jane Smith', phone: '234-567-8901', email: 'jane@example.com' },
@@ -99,16 +98,15 @@ const NewJob = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically save the job data
     console.log('Job submitted', { 
       customerName, 
       phoneNumber, 
       emailAddress, 
       deviceType, 
       deviceConditions,
-      devicePhoto
+      devicePhoto,
+      selectedProblem
     });
-    // TODO: Implement saving to Excel and PDF
     navigate('/');
   };
 
@@ -216,7 +214,7 @@ const NewJob = () => {
             {deviceType && (
               <div>
                 <Label htmlFor="problem">Common Problems</Label>
-                <Select>
+                <Select value={selectedProblem} onValueChange={setSelectedProblem}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select problem" />
                   </SelectTrigger>
