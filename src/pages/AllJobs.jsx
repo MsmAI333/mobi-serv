@@ -36,26 +36,6 @@ const AllJobs = () => {
     })
   ) || [];
 
-  useEffect(() => {
-    // Auto-testing: Simulate user interactions
-    const autoTest = async () => {
-      // Test filter functionality
-      handleFilterChange('status', 'Ongoing');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      console.log('Filtered jobs:', filteredJobs);
-
-      // Test navigation
-      navigate('/edit-job/1');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      navigate('/all-jobs');
-
-      // Reset filters
-      setFilters({ id: '', customer: '', device: '', status: '', date: '' });
-    };
-
-    autoTest();
-  }, [jobs]);
-
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error fetching jobs</div>;
 
@@ -78,7 +58,7 @@ const AllJobs = () => {
             <SelectValue placeholder="Filter by Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="">All</SelectItem>
             <SelectItem value="Started">Started</SelectItem>
             <SelectItem value="Ongoing">Ongoing</SelectItem>
             <SelectItem value="Completed">Completed</SelectItem>
@@ -89,7 +69,7 @@ const AllJobs = () => {
             <SelectValue placeholder="Filter by Date" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="">All</SelectItem>
             <SelectItem value="today">Today</SelectItem>
           </SelectContent>
         </Select>
@@ -116,12 +96,10 @@ const AllJobs = () => {
               <TableCell>{job.device}</TableCell>
               <TableCell>{job.status}</TableCell>
               <TableCell>
-                <Link to={`/edit-job/${job.id}`}>
-                  <Button variant="ghost" size="sm">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                </Link>
+                <Button variant="ghost" size="sm" onClick={() => navigate(`/edit-job/${job.id}`)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
               </TableCell>
             </TableRow>
           ))}
