@@ -8,18 +8,7 @@ import JobList from '../components/JobList';
 import Analytics from '../components/Analytics';
 import Navigation from '../components/Navigation';
 import { useQuery } from '@tanstack/react-query';
-
-const fetchSearchResults = async (query) => {
-  // TODO: Replace this with actual API call to fetch data from Excel
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return [
-    { id: 'CUST001', name: 'John Doe', phone: '123-456-7890' },
-    { id: 'CUST002', name: 'Jane Smith', phone: '234-567-8901' },
-  ].filter(customer => 
-    customer.name.toLowerCase().includes(query.toLowerCase()) ||
-    customer.phone.includes(query)
-  );
-};
+import CustomerSearch from '../components/CustomerSearch';
 
 const fetchDashboardData = async () => {
   // TODO: Replace this with actual API call to fetch data from Excel
@@ -33,29 +22,12 @@ const fetchDashboardData = async () => {
 };
 
 const Index = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
   const navigate = useNavigate();
 
   const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
     queryKey: ['dashboardData'],
     queryFn: fetchDashboardData,
   });
-
-  const handleSearch = async (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    if (query.length > 2) {
-      const results = await fetchSearchResults(query);
-      setSearchResults(results);
-    } else {
-      setSearchResults([]);
-    }
-  };
-
-  const handleSearchResultClick = (customerId) => {
-    navigate(`/customers/${customerId}`);
-  };
 
   if (dashboardLoading) return <div>Loading...</div>;
 
@@ -79,27 +51,7 @@ const Index = () => {
           </div>
           <Navigation />
           <div className="mt-4 relative">
-            <Input
-              type="text"
-              placeholder="Search by name, phone, email, or reference number"
-              className="pl-10 pr-4 py-2 w-full"
-              value={searchQuery}
-              onChange={handleSearch}
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            {searchResults.length > 0 && (
-              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
-                {searchResults.map((result) => (
-                  <div
-                    key={result.id}
-                    className="p-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleSearchResultClick(result.id)}
-                  >
-                    {result.name} - {result.phone}
-                  </div>
-                ))}
-              </div>
-            )}
+            <CustomerSearch />
           </div>
         </div>
       </header>

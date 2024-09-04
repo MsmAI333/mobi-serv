@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import CustomerSearch from '../components/CustomerSearch';
 
 const fetchCustomers = async () => {
   // TODO: Replace this with actual API call to fetch data from Excel
@@ -90,19 +91,26 @@ const NewJob = () => {
     laptop: ['Won\'t Power On', 'Blue Screen of Death', 'Slow Performance', 'Overheating']
   };
 
-  useEffect(() => {
-    if (customers) {
-      const found = customers.find(c => 
-        c.name.toLowerCase() === jobData.customerName.toLowerCase() ||
-        c.phone === jobData.phoneNumber ||
-        c.email.toLowerCase() === jobData.emailAddress.toLowerCase()
-      );
-      setExistingCustomer(found);
-    }
-  }, [jobData.customerName, jobData.phoneNumber, jobData.emailAddress, customers]);
-
   const handleInputChange = (field, value) => {
     setJobData(prev => ({ ...prev, [field]: value }));
+    if (field === 'customerName' || field === 'phoneNumber' || field === 'emailAddress') {
+      const found = customers?.find(c => 
+        c.name.toLowerCase() === value.toLowerCase() ||
+        c.phone === value ||
+        c.email.toLowerCase() === value.toLowerCase()
+      );
+      if (found) {
+        setExistingCustomer(found);
+        setJobData(prev => ({
+          ...prev,
+          customerName: found.name,
+          phoneNumber: found.phone,
+          emailAddress: found.email
+        }));
+      } else {
+        setExistingCustomer(null);
+      }
+    }
   };
 
   const handleConditionChange = (item, value) => {
@@ -137,6 +145,21 @@ const NewJob = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            <CustomerSearch onSelect={(customer) => {
+              setExistingCustomer(customer);
+              setJobData(prev => ({
+                ...prev,
+                customerName: customer.name,
+                phoneNumber: customer.phone,
+                emailAddress: customer.email
+              }));
+            }} />
+            {existingCustomer && (
+              <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4" role="alert">
+                <p className="font-bold">Existing Customer Found</p>
+                <p>Customer ID: {existingCustomer.id}</p>
+              </div>
+            )}
             <div>
               <Label htmlFor="customerName">Customer Name</Label>
               <Input 
@@ -166,12 +189,6 @@ const NewJob = () => {
                 required 
               />
             </div>
-            {existingCustomer && (
-              <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4" role="alert">
-                <p className="font-bold">Existing Customer Found</p>
-                <p>Customer ID: {existingCustomer.id}</p>
-              </div>
-            )}
             <div>
               <Label htmlFor="deviceType">Device Type</Label>
               <Select 

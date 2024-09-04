@@ -7,6 +7,7 @@ import Customers from "./pages/Customers.jsx";
 import Login from "./pages/Login.jsx";
 import RevenueDetails from "./pages/RevenueDetails.jsx";
 import EditJob from "./pages/EditJob.jsx";
+import RevenueAnalysis from "./pages/RevenueAnalysis.jsx";
 
 export const navItems = [
   {
@@ -56,5 +57,11 @@ export const navItems = [
     to: "/edit-job/:id",
     icon: <ListIcon className="h-4 w-4" />,
     page: <EditJob />,
+  },
+  {
+    title: "Revenue Analysis",
+    to: "/revenue-analysis",
+    icon: <BarChart2Icon className="h-4 w-4" />,
+    page: <RevenueAnalysis />,
   },
 ];
