@@ -9,24 +9,54 @@ import Analytics from '../components/Analytics';
 import Navigation from '../components/Navigation';
 import { useQuery } from '@tanstack/react-query';
 
+const fetchSearchResults = async (query) => {
+  // Simulating API call
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return [
+    { id: 'CUST001', name: 'John Doe', phone: '123-456-7890' },
+    { id: 'CUST002', name: 'Jane Smith', phone: '234-567-8901' },
+  ].filter(customer => 
+    customer.name.toLowerCase().includes(query.toLowerCase()) ||
+    customer.phone.includes(query)
+  );
+};
+
+const fetchDashboardData = async () => {
+  // Simulating API call
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return {
+    totalJobs: 1234,
+    ongoingJobs: 42,
+    completedToday: 16,
+    revenueToday: 1234
+  };
+};
+
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
-  const { data: searchResults, refetch } = useQuery({
+  const { data: searchResults, refetch: refetchSearch } = useQuery({
     queryKey: ['search', searchQuery],
     queryFn: () => fetchSearchResults(searchQuery),
     enabled: false,
   });
 
+  const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
+    queryKey: ['dashboardData'],
+    queryFn: fetchDashboardData,
+  });
+
   const handleSearch = (e) => {
     e.preventDefault();
-    refetch();
+    refetchSearch();
   };
 
   const handleSearchResultClick = (customerId) => {
     navigate(`/customers/${customerId}`);
   };
+
+  if (dashboardLoading) return <div>Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -87,7 +117,7 @@ const Index = () => {
                   <Smartphone className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">1,234</div>
+                  <div className="text-2xl font-bold">{dashboardData.totalJobs}</div>
                 </CardContent>
               </Card>
             </Link>
@@ -98,7 +128,7 @@ const Index = () => {
                   <Laptop className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">42</div>
+                  <div className="text-2xl font-bold">{dashboardData.ongoingJobs}</div>
                 </CardContent>
               </Card>
             </Link>
@@ -109,7 +139,7 @@ const Index = () => {
                   <BarChart2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">16</div>
+                  <div className="text-2xl font-bold">{dashboardData.completedToday}</div>
                 </CardContent>
               </Card>
             </Link>
@@ -120,7 +150,7 @@ const Index = () => {
                   <BarChart2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">$1,234</div>
+                  <div className="text-2xl font-bold">${dashboardData.revenueToday}</div>
                 </CardContent>
               </Card>
             </Link>

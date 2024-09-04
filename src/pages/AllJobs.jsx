@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Edit } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navigation from '../components/Navigation';
+import { useQuery } from '@tanstack/react-query';
+
+const fetchJobs = async () => {
+  // Simulating API call
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return [
+    { id: 1, customer: 'John Doe', device: 'iPhone 12', status: 'Started', customerId: 'CUST001', date: '2023-03-15' },
+    { id: 2, customer: 'Jane Smith', device: 'Samsung Galaxy S21', status: 'Ongoing', customerId: 'CUST002', date: '2023-03-16' },
+    { id: 3, customer: 'Bob Johnson', device: 'MacBook Pro', status: 'Completed', customerId: 'CUST003', date: '2023-03-17' },
+  ];
+};
+
+const fetchCustomers = async () => {
+  // Simulating API call
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return [
+    { id: 'CUST001', name: 'John Doe', email: 'john@example.com', phone: '123-456-7890' },
+    { id: 'CUST002', name: 'Jane Smith', email: 'jane@example.com', phone: '234-567-8901' },
+    { id: 'CUST003', name: 'Bob Johnson', email: 'bob@example.com', phone: '345-678-9012' },
+  ];
+};
 
 const AllJobs = () => {
   const navigate = useNavigate();
@@ -17,41 +38,21 @@ const AllJobs = () => {
     date: '',
   });
 
-  const [jobs, setJobs] = useState([]);
-  const [customers, setCustomers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: jobs, isLoading: jobsLoading, isError: jobsError } = useQuery({
+    queryKey: ['jobs'],
+    queryFn: fetchJobs,
+  });
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      // Simulating API call
-      const mockJobs = [
-        { id: 1, customer: 'John Doe', device: 'iPhone 12', status: 'Started', customerId: 'CUST001', date: '2023-03-15' },
-        { id: 2, customer: 'Jane Smith', device: 'Samsung Galaxy S21', status: 'Ongoing', customerId: 'CUST002', date: '2023-03-16' },
-        { id: 3, customer: 'Bob Johnson', device: 'MacBook Pro', status: 'Completed', customerId: 'CUST003', date: '2023-03-17' },
-      ];
-      setJobs(mockJobs);
-      setLoading(false);
-    };
-
-    const fetchCustomers = async () => {
-      // Simulating API call
-      const mockCustomers = [
-        { id: 'CUST001', name: 'John Doe', email: 'john@example.com', phone: '123-456-7890' },
-        { id: 'CUST002', name: 'Jane Smith', email: 'jane@example.com', phone: '234-567-8901' },
-        { id: 'CUST003', name: 'Bob Johnson', email: 'bob@example.com', phone: '345-678-9012' },
-      ];
-      setCustomers(mockCustomers);
-    };
-
-    fetchJobs();
-    fetchCustomers();
-  }, []);
+  const { data: customers, isLoading: customersLoading, isError: customersError } = useQuery({
+    queryKey: ['customers'],
+    queryFn: fetchCustomers,
+  });
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const filteredJobs = jobs.filter(job => {
+  const filteredJobs = jobs?.filter(job => {
     return Object.entries(filters).every(([key, value]) => {
       if (!value) return true;
       if (key === 'date' && value === 'today') {
@@ -62,24 +63,23 @@ const AllJobs = () => {
   });
 
   const handleCustomerSearch = (input) => {
-    return customers.filter(customer =>
+    return customers?.filter(customer =>
       customer.name.toLowerCase().includes(input.toLowerCase())
     ).map(customer => ({
       value: customer.id,
       label: customer.name
-    }));
+    })) || [];
   };
 
   const handleCustomerSelect = (customerId) => {
-    const selectedCustomer = customers.find(customer => customer.id === customerId);
+    const selectedCustomer = customers?.find(customer => customer.id === customerId);
     if (selectedCustomer) {
       navigate('/new-job', { state: { customerData: selectedCustomer } });
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  if (jobsLoading || customersLoading) return <div>Loading...</div>;
+  if (jobsError || customersError) return <div>Error fetching data</div>;
 
   return (
     <div className="container mx-auto py-10">

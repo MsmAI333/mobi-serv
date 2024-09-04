@@ -7,150 +7,126 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera } from 'lucide-react';
 import Navigation from '../components/Navigation';
+import { useQuery, useMutation } from '@tanstack/react-query';
 
-const ConditionButton = ({ item, condition, setCondition }) => {
-  return (
-    <div className="flex flex-col space-y-2">
-      <span className="text-sm font-medium">{item}</span>
-      <div className="flex space-x-2">
-        <Button
-          type="button"
-          variant={condition === 'Yes' ? 'default' : 'outline'}
-          onClick={() => setCondition('Yes')}
-          className="w-16"
-        >
-          Yes
-        </Button>
-        <Button
-          type="button"
-          variant={condition === 'No' ? 'default' : 'outline'}
-          onClick={() => setCondition('No')}
-          className="w-16"
-        >
-          No
-        </Button>
-      </div>
-    </div>
-  );
+const fetchCustomers = async () => {
+  // Simulating API call
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return [
+    { id: 'CUST001', name: 'John Doe', phone: '123-456-7890', email: 'john@example.com' },
+    { id: 'CUST002', name: 'Jane Smith', phone: '234-567-8901', email: 'jane@example.com' },
+  ];
 };
+
+const submitJob = async (jobData) => {
+  // Simulating API call
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  console.log('Job submitted:', jobData);
+  return { success: true, id: 'JOB001' };
+};
+
+const ConditionButton = ({ item, condition, setCondition }) => (
+  <div className="flex flex-col space-y-2">
+    <span className="text-sm font-medium">{item}</span>
+    <div className="flex space-x-2">
+      <Button
+        type="button"
+        variant={condition === 'Yes' ? 'default' : 'outline'}
+        onClick={() => setCondition('Yes')}
+        className="w-16"
+      >
+        Yes
+      </Button>
+      <Button
+        type="button"
+        variant={condition === 'No' ? 'default' : 'outline'}
+        onClick={() => setCondition('No')}
+        className="w-16"
+      >
+        No
+      </Button>
+    </div>
+  </div>
+);
 
 const NewJob = () => {
   const navigate = useNavigate();
-  const [deviceType, setDeviceType] = useState('');
-  const [devicePhoto, setDevicePhoto] = useState(null);
-  const fileInputRef = useRef(null);
-  const [availableCameras, setAvailableCameras] = useState([]);
-  const [selectedCamera, setSelectedCamera] = useState('');
-  const [deviceConditions, setDeviceConditions] = useState({
-    Charging: '',
-    Battery: '',
-    Screen: '',
-    Audio: '',
-    WiFi: '',
-    Camera: ''
+  const [jobData, setJobData] = useState({
+    customerName: '',
+    phoneNumber: '',
+    emailAddress: '',
+    deviceType: '',
+    selectedProblem: '',
+    deviceConditions: {
+      Charging: '',
+      Battery: '',
+      Screen: '',
+      Audio: '',
+      WiFi: '',
+      Camera: ''
+    },
+    devicePhoto: null,
+    advancePayment: ''
   });
-  const [customerName, setCustomerName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [emailAddress, setEmailAddress] = useState('');
+
+  const { data: customers, isLoading: customersLoading } = useQuery({
+    queryKey: ['customers'],
+    queryFn: fetchCustomers
+  });
+
+  const mutation = useMutation({
+    mutationFn: submitJob,
+    onSuccess: (data) => {
+      console.log('Job created successfully:', data);
+      navigate('/');
+    },
+  });
+
   const [existingCustomer, setExistingCustomer] = useState(null);
-  const [selectedProblem, setSelectedProblem] = useState('');
+  const fileInputRef = useRef(null);
 
   const commonProblems = {
-    phone: [
-      'Broken Screen', 'Battery Issues', 'Charging Problems', 'Software Glitches',
-      'Camera Malfunction', 'Audio Issues', 'Water Damage', 'Overheating',
-      'Slow Performance', 'Network Connectivity Issues'
-    ],
-    laptop: [
-      'Won\'t Power On', 'Blue Screen of Death', 'Slow Performance', 'Overheating',
-      'Battery Not Charging', 'Keyboard Issues', 'Trackpad Problems', 'Display Issues',
-      'Audio Malfunction', 'Wi-Fi Connectivity Problems'
-    ]
+    phone: ['Broken Screen', 'Battery Issues', 'Charging Problems', 'Software Glitches'],
+    laptop: ['Won\'t Power On', 'Blue Screen of Death', 'Slow Performance', 'Overheating']
   };
 
   useEffect(() => {
-    const checkExistingCustomer = () => {
-      const mockCustomers = [
-        { id: 'CUST001', name: 'John Doe', phone: '123-456-7890', email: 'john@example.com' },
-        { id: 'CUST002', name: 'Jane Smith', phone: '234-567-8901', email: 'jane@example.com' },
-      ];
-
-      const found = mockCustomers.find(c => 
-        c.name.toLowerCase() === customerName.toLowerCase() ||
-        c.phone === phoneNumber ||
-        c.email.toLowerCase() === emailAddress.toLowerCase()
+    if (customers) {
+      const found = customers.find(c => 
+        c.name.toLowerCase() === jobData.customerName.toLowerCase() ||
+        c.phone === jobData.phoneNumber ||
+        c.email.toLowerCase() === jobData.emailAddress.toLowerCase()
       );
-
-      if (found) {
-        setExistingCustomer(found);
-        setCustomerName(found.name);
-        setPhoneNumber(found.phone);
-        setEmailAddress(found.email);
-      } else {
-        setExistingCustomer(null);
-      }
-    };
-
-    if (customerName || phoneNumber || emailAddress) {
-      checkExistingCustomer();
+      setExistingCustomer(found);
     }
-  }, [customerName, phoneNumber, emailAddress]);
+  }, [jobData.customerName, jobData.phoneNumber, jobData.emailAddress, customers]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Job submitted', { 
-      customerName, 
-      phoneNumber, 
-      emailAddress, 
-      deviceType, 
-      deviceConditions,
-      devicePhoto,
-      selectedProblem
-    });
-    navigate('/');
+  const handleInputChange = (field, value) => {
+    setJobData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleConditionChange = (item, value) => {
+    setJobData(prev => ({
+      ...prev,
+      deviceConditions: { ...prev.deviceConditions, [item]: value }
+    }));
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => setDevicePhoto(e.target.result);
+      reader.onload = (e) => handleInputChange('devicePhoto', e.target.result);
       reader.readAsDataURL(file);
     }
   };
 
-  const handleCameraClick = async () => {
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(device => device.kind === 'videoinput');
-      setAvailableCameras(videoDevices);
-      if (videoDevices.length > 0) {
-        setSelectedCamera(videoDevices[0].deviceId);
-      }
-    } catch (error) {
-      console.error('Error accessing cameras:', error);
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    mutation.mutate(jobData);
   };
 
-  const capturePhoto = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: selectedCamera } });
-      const video = document.createElement('video');
-      video.srcObject = stream;
-      await video.play();
-
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.getContext('2d').drawImage(video, 0, 0);
-      
-      setDevicePhoto(canvas.toDataURL('image/jpeg'));
-      
-      stream.getTracks().forEach(track => track.stop());
-    } catch (error) {
-      console.error('Error capturing photo:', error);
-    }
-  };
+  if (customersLoading) return <div>Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -165,9 +141,8 @@ const NewJob = () => {
               <Label htmlFor="customerName">Customer Name</Label>
               <Input 
                 id="customerName" 
-                value={customerName} 
-                onChange={(e) => setCustomerName(e.target.value)} 
-                placeholder="Enter customer name" 
+                value={jobData.customerName} 
+                onChange={(e) => handleInputChange('customerName', e.target.value)} 
                 required 
               />
             </div>
@@ -176,9 +151,8 @@ const NewJob = () => {
               <Input 
                 id="phoneNumber" 
                 type="tel" 
-                value={phoneNumber} 
-                onChange={(e) => setPhoneNumber(e.target.value)} 
-                placeholder="Enter phone number" 
+                value={jobData.phoneNumber} 
+                onChange={(e) => handleInputChange('phoneNumber', e.target.value)} 
                 required 
               />
             </div>
@@ -187,9 +161,8 @@ const NewJob = () => {
               <Input 
                 id="emailAddress" 
                 type="email" 
-                value={emailAddress} 
-                onChange={(e) => setEmailAddress(e.target.value)} 
-                placeholder="Enter email address" 
+                value={jobData.emailAddress} 
+                onChange={(e) => handleInputChange('emailAddress', e.target.value)} 
                 required 
               />
             </div>
@@ -201,7 +174,10 @@ const NewJob = () => {
             )}
             <div>
               <Label htmlFor="deviceType">Device Type</Label>
-              <Select onValueChange={setDeviceType} required>
+              <Select 
+                value={jobData.deviceType} 
+                onValueChange={(value) => handleInputChange('deviceType', value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select device type" />
                 </SelectTrigger>
@@ -211,15 +187,18 @@ const NewJob = () => {
                 </SelectContent>
               </Select>
             </div>
-            {deviceType && (
+            {jobData.deviceType && (
               <div>
                 <Label htmlFor="problem">Common Problems</Label>
-                <Select value={selectedProblem} onValueChange={setSelectedProblem}>
+                <Select 
+                  value={jobData.selectedProblem} 
+                  onValueChange={(value) => handleInputChange('selectedProblem', value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select problem" />
                   </SelectTrigger>
                   <SelectContent>
-                    {commonProblems[deviceType].map((problem, index) => (
+                    {commonProblems[jobData.deviceType].map((problem, index) => (
                       <SelectItem key={index} value={problem}>{problem}</SelectItem>
                     ))}
                   </SelectContent>
@@ -229,12 +208,12 @@ const NewJob = () => {
             <div>
               <Label>Device Condition Checklist</Label>
               <div className="grid grid-cols-2 gap-4 mt-2">
-                {Object.keys(deviceConditions).map((item) => (
+                {Object.keys(jobData.deviceConditions).map((item) => (
                   <ConditionButton
                     key={item}
                     item={item}
-                    condition={deviceConditions[item]}
-                    setCondition={(value) => setDeviceConditions(prev => ({ ...prev, [item]: value }))}
+                    condition={jobData.deviceConditions[item]}
+                    setCondition={(value) => handleConditionChange(item, value)}
                   />
                 ))}
               </div>
@@ -245,10 +224,6 @@ const NewJob = () => {
                 <Button type="button" onClick={() => fileInputRef.current.click()}>
                   Upload Photo
                 </Button>
-                <Button type="button" onClick={handleCameraClick}>
-                  <Camera className="mr-2 h-4 w-4" />
-                  Take Photo
-                </Button>
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -257,38 +232,25 @@ const NewJob = () => {
                   className="hidden"
                 />
               </div>
-              {availableCameras.length > 0 && (
+              {jobData.devicePhoto && (
                 <div className="mt-4">
-                  <Label htmlFor="cameraSelect">Select Camera</Label>
-                  <Select value={selectedCamera} onValueChange={setSelectedCamera}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select camera" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableCameras.map((camera) => (
-                        <SelectItem key={camera.deviceId} value={camera.deviceId}>
-                          {camera.label || `Camera ${camera.deviceId}`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button type="button" onClick={capturePhoto} className="mt-2">
-                    Capture Photo
-                  </Button>
-                </div>
-              )}
-              {devicePhoto && (
-                <div className="mt-4">
-                  <img src={devicePhoto} alt="Device" className="max-w-full h-auto" />
+                  <img src={jobData.devicePhoto} alt="Device" className="max-w-full h-auto" />
                 </div>
               )}
             </div>
             <div>
               <Label htmlFor="advancePayment">Advance Payment (Optional)</Label>
-              <Input id="advancePayment" type="number" placeholder="Enter advance payment amount" />
+              <Input 
+                id="advancePayment" 
+                type="number" 
+                value={jobData.advancePayment}
+                onChange={(e) => handleInputChange('advancePayment', e.target.value)}
+              />
             </div>
             <div className="flex justify-end">
-              <Button type="submit">Create Job Sheet</Button>
+              <Button type="submit" disabled={mutation.isLoading}>
+                {mutation.isLoading ? 'Creating...' : 'Create Job Sheet'}
+              </Button>
             </div>
           </form>
         </CardContent>

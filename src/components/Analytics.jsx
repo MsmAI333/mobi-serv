@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Button } from "@/components/ui/button";
+import { useQuery } from '@tanstack/react-query';
 
-const Analytics = () => {
-  const [metric, setMetric] = useState('jobs');
-
-  const data = {
+const fetchAnalyticsData = async () => {
+  // Simulating API call
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return {
     jobs: [
       { name: 'Mon', value: 12 },
       { name: 'Tue', value: 19 },
@@ -44,6 +45,14 @@ const Analytics = () => {
       { name: 'Sun', value: 100 },
     ],
   };
+};
+
+const Analytics = () => {
+  const [metric, setMetric] = useState('jobs');
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['analytics'],
+    queryFn: fetchAnalyticsData,
+  });
 
   const metricLabels = {
     jobs: 'Jobs',
@@ -51,6 +60,9 @@ const Analytics = () => {
     products: 'Products/Services',
     revenue: 'Revenue ($)',
   };
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error fetching analytics data</div>;
 
   return (
     <Card>
