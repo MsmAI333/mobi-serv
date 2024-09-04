@@ -4,22 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navigation from '../components/Navigation';
 
 const AllJobs = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const initialStatus = queryParams.get('status') || '';
-  const initialDate = queryParams.get('date') || '';
-
   const [filters, setFilters] = useState({
     id: '',
     customer: '',
     device: '',
-    status: initialStatus,
-    date: initialDate,
+    status: '',
+    date: '',
   });
 
   const [jobs, setJobs] = useState([]);
@@ -27,9 +22,8 @@ const AllJobs = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulating API calls
     const fetchJobs = async () => {
-      // This would be replaced with an actual API call
+      // Simulating API call
       const mockJobs = [
         { id: 1, customer: 'John Doe', device: 'iPhone 12', status: 'Started', customerId: 'CUST001', date: '2023-03-15' },
         { id: 2, customer: 'Jane Smith', device: 'Samsung Galaxy S21', status: 'Ongoing', customerId: 'CUST002', date: '2023-03-16' },
@@ -40,7 +34,7 @@ const AllJobs = () => {
     };
 
     const fetchCustomers = async () => {
-      // This would be replaced with an actual API call
+      // Simulating API call
       const mockCustomers = [
         { id: 'CUST001', name: 'John Doe', email: 'john@example.com', phone: '123-456-7890' },
         { id: 'CUST002', name: 'Jane Smith', email: 'jane@example.com', phone: '234-567-8901' },
@@ -68,10 +62,9 @@ const AllJobs = () => {
   });
 
   const handleCustomerSearch = (input) => {
-    const matchingCustomers = customers.filter(customer =>
+    return customers.filter(customer =>
       customer.name.toLowerCase().includes(input.toLowerCase())
-    );
-    return matchingCustomers.map(customer => ({
+    ).map(customer => ({
       value: customer.id,
       label: customer.name
     }));
