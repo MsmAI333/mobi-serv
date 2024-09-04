@@ -78,7 +78,7 @@ const AllJobs = () => {
             <SelectValue placeholder="Filter by Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="Started">Started</SelectItem>
             <SelectItem value="Ongoing">Ongoing</SelectItem>
             <SelectItem value="Completed">Completed</SelectItem>
@@ -89,7 +89,7 @@ const AllJobs = () => {
             <SelectValue placeholder="Filter by Date" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="today">Today</SelectItem>
           </SelectContent>
         </Select>
