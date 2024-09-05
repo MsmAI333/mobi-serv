@@ -1,15 +1,61 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Link } from 'react-router-dom';
 import Navigation from '../components/Navigation';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchCustomersFromExcel, editCustomerData, deleteCustomerData } from '../utils/dataUtils';
+
+const CustomerDetails = ({ customer }) => (
+  <Dialog>
+    <DialogTrigger asChild>
+      <Button variant="link">View Details</Button>
+    </DialogTrigger>
+    <DialogContent className="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>{customer.name}</DialogTitle>
+      </DialogHeader>
+      <div className="grid gap-4 py-4">
+        <p>Email: {customer.email}</p>
+        <p>Phone: {customer.phone}</p>
+        <p>Device: {customer.device}</p>
+        <p>Problem: {customer.problem}</p>
+        <p>Status: {customer.status}</p>
+        <p>Date: {customer.date}</p>
+        <img src={customer.imageUrl} alt="Device" className="w-full h-auto" />
+        <Button onClick={() => window.open(customer.pdfUrl, '_blank')}>View PDF</Button>
+      </div>
+    </DialogContent>
+  </Dialog>
+);
 
 const Customers = () => {
-  const customers = [
-    { id: 'CUST001', name: 'John Doe', email: 'john@example.com', phone: '123-456-7890', totalJobs: 3 },
-    { id: 'CUST002', name: 'Jane Smith', email: 'jane@example.com', phone: '234-567-8901', totalJobs: 2 },
-    { id: 'CUST003', name: 'Bob Johnson', email: 'bob@example.com', phone: '345-678-9012', totalJobs: 1 },
-  ];
+  const queryClient = useQueryClient();
+  const [editingCustomer, setEditingCustomer] = useState(null);
+
+  const { data: customers, isLoading, isError } = useQuery({
+    queryKey: ['customers'],
+    queryFn: fetchCustomersFromExcel,
+  });
+
+  const editMutation = useMutation({
+    mutationFn: ({ id, data }) => editCustomerData(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['customers']);
+      setEditingCustomer(null);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => deleteCustomerData(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['customers']);
+    },
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error fetching customers</div>;
 
   return (
     <div className="container mx-auto py-10">
@@ -28,7 +74,6 @@ const Customers = () => {
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
-            <TableHead>Total Jobs</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -39,18 +84,51 @@ const Customers = () => {
               <TableCell>{customer.name}</TableCell>
               <TableCell>{customer.email}</TableCell>
               <TableCell>{customer.phone}</TableCell>
-              <TableCell>{customer.totalJobs}</TableCell>
               <TableCell>
-                <Link to={`/customers/${customer.id}`}>
-                  <Button variant="ghost" size="sm">
-                    View Details
-                  </Button>
-                </Link>
+                <CustomerDetails customer={customer} />
+                <Button variant="ghost" size="sm" onClick={() => setEditingCustomer(customer)}>
+                  Edit
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => deleteMutation.mutate(customer.id)}>
+                  Delete
+                </Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      {editingCustomer && (
+        <Dialog open={!!editingCustomer} onOpenChange={() => setEditingCustomer(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Customer</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              const updatedData = Object.fromEntries(formData.entries());
+              editMutation.mutate({ id: editingCustomer.id, data: updatedData });
+            }}>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="name">Name</label>
+                  <input id="name" name="name" defaultValue={editingCustomer.name} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="email">Email</label>
+                  <input id="email" name="email" defaultValue={editingCustomer.email} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="phone">Phone</label>
+                  <input id="phone" name="phone" defaultValue={editingCustomer.phone} className="col-span-3" />
+                </div>
+              </div>
+              <Button type="submit">Save Changes</Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
