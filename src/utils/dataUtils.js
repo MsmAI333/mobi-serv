@@ -1,42 +1,34 @@
 import * as XLSX from 'xlsx';
 import { jsPDF } from "jspdf";
-import { Twilio } from 'twilio';
 
 const EXCEL_FILE_PATH = '/path/to/your/excel/file.xlsx';
 
 export const fetchCustomersFromExcel = async () => {
-  const workbook = XLSX.readFile(EXCEL_FILE_PATH);
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  return XLSX.utils.sheet_to_json(sheet);
+  // Simulating Excel file reading
+  return [
+    { id: 'CUST001', name: 'John Doe', phone: '123-456-7890', email: 'john@example.com' },
+    { id: 'CUST002', name: 'Jane Smith', phone: '234-567-8901', email: 'jane@example.com' },
+    { id: 'CUST003', name: 'Bob Johnson', phone: '345-678-9012', email: 'bob@example.com' },
+  ];
 };
 
 export const saveJobToExcel = async (jobData) => {
-  const workbook = XLSX.readFile(EXCEL_FILE_PATH);
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const jobs = XLSX.utils.sheet_to_json(sheet);
-  
+  // Simulating saving to Excel
   const newJob = {
-    id: `JOB${jobs.length + 1}`,
+    id: `JOB${Math.floor(Math.random() * 1000)}`,
     ...jobData,
     date: new Date().toISOString(),
   };
-  
-  jobs.push(newJob);
-  
-  const newSheet = XLSX.utils.json_to_sheet(jobs);
-  workbook.Sheets[workbook.SheetNames[0]] = newSheet;
-  
-  XLSX.writeFile(workbook, EXCEL_FILE_PATH);
-  
+  console.log('Job saved:', newJob);
   return newJob;
 };
 
 export const fetchCustomerJobs = async (customerId) => {
-  const workbook = XLSX.readFile(EXCEL_FILE_PATH);
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const jobs = XLSX.utils.sheet_to_json(sheet);
-  
-  return jobs.filter(job => job.customerId === customerId);
+  // Simulating fetching customer jobs
+  return [
+    { id: 'JOB001', customerId, device: 'iPhone', status: 'Completed', date: '2023-03-15' },
+    { id: 'JOB002', customerId, device: 'MacBook', status: 'In Progress', date: '2023-03-20' },
+  ];
 };
 
 export const generateJobPDF = async (jobData, signature) => {
@@ -55,18 +47,10 @@ export const generateJobPDF = async (jobData, signature) => {
 };
 
 export const sendWhatsAppMessage = async (phoneNumber, pdfBlob) => {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const client = new Twilio(accountSid, authToken);
-  
-  const message = await client.messages.create({
-    body: 'Welcome to Mobi Serv! Here is your job sheet.',
-    from: 'whatsapp:+14155238886',
-    to: `whatsapp:${phoneNumber}`,
-    mediaUrl: [URL.createObjectURL(pdfBlob)],
-  });
-  
-  return message.sid;
+  // Simulating WhatsApp message sending
+  console.log(`Sending WhatsApp message to ${phoneNumber}`);
+  console.log('PDF Blob:', pdfBlob);
+  return 'MESSAGE_SID_12345';
 };
 
 export const fetchRevenueData = async () => {
