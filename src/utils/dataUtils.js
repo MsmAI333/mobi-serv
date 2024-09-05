@@ -1,105 +1,107 @@
-import * as XLSX from 'xlsx';
+import { v4 as uuidv4 } from 'uuid';
 
-const EXCEL_FILE_NAME = 'customer_data.xlsx';
+const STORAGE_KEY = 'customer_data';
 
-// Function to read data from Excel file
-const readExcelFile = () => {
-  try {
-    const workbook = XLSX.readFile(EXCEL_FILE_NAME);
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    return XLSX.utils.sheet_to_json(worksheet);
-  } catch (error) {
-    console.error('Error reading Excel file:', error);
-    return [];
+let customerData = [];
+
+const saveToLocalStorage = () => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(customerData));
+};
+
+const loadFromLocalStorage = () => {
+  const storedData = localStorage.getItem(STORAGE_KEY);
+  if (storedData) {
+    customerData = JSON.parse(storedData);
+  } else {
+    customerData = [];
   }
 };
 
-// Function to write data to Excel file
-const writeExcelFile = (data) => {
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Customers');
-  XLSX.writeFile(workbook, EXCEL_FILE_NAME);
+const initializeData = () => {
+  loadFromLocalStorage();
+  if (customerData.length === 0) {
+    for (let i = 1; i <= 50; i++) {
+      customerData.push({
+        id: uuidv4(),
+        name: `Customer ${i}`,
+        email: `customer${i}@example.com`,
+        phone: `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+        device: ['iPhone', 'Samsung', 'Google Pixel', 'OnePlus'][Math.floor(Math.random() * 4)],
+        problem: ['Screen Repair', 'Battery Replacement', 'Water Damage', 'Software Issue'][Math.floor(Math.random() * 4)],
+        status: ['Pending', 'In Progress', 'Completed'][Math.floor(Math.random() * 3)],
+        date: new Date().toISOString(),
+        pdfUrl: `https://example.com/customer${i}_report.pdf`,
+        imageUrl: `https://example.com/customer${i}_device.jpg`
+      });
+    }
+    saveToLocalStorage();
+  }
 };
 
-// Function to add new customer data
-export const addCustomerData = (newCustomer) => {
-  const existingData = readExcelFile();
-  const updatedData = [...existingData, newCustomer];
-  writeExcelFile(updatedData);
-  return updatedData;
+export const fetchCustomersFromExcel = async () => {
+  initializeData();
+  return customerData;
 };
 
-// Function to edit customer data
-export const editCustomerData = (customerId, updatedData) => {
-  const allData = readExcelFile();
-  const updatedCustomers = allData.map(customer => 
-    customer.id === customerId ? { ...customer, ...updatedData } : customer
+export const addCustomerData = async (newCustomer) => {
+  const customerWithId = { ...newCustomer, id: uuidv4(), date: new Date().toISOString() };
+  customerData.push(customerWithId);
+  saveToLocalStorage();
+  return customerData;
+};
+
+export const editCustomerData = async (customerId, updatedData) => {
+  customerData = customerData.map(customer => 
+    customer.id === customerId ? { ...customer, ...updatedData, date: new Date().toISOString() } : customer
   );
-  writeExcelFile(updatedCustomers);
-  return updatedCustomers;
+  saveToLocalStorage();
+  return customerData;
 };
 
-// Function to delete customer data
-export const deleteCustomerData = (customerId) => {
-  const allData = readExcelFile();
-  const updatedData = allData.filter(customer => customer.id !== customerId);
-  writeExcelFile(updatedData);
-  return updatedData;
+export const deleteCustomerData = async (customerId) => {
+  customerData = customerData.filter(customer => customer.id !== customerId);
+  saveToLocalStorage();
+  return customerData;
 };
 
-// Function to fetch all customer data
-export const fetchCustomersFromExcel = () => {
-  return readExcelFile();
-};
-
-// Function to save new job
-export const saveJobToExcel = (jobData) => {
+export const saveJobToExcel = async (jobData) => {
   const newJob = {
-    id: `JOB${Math.floor(Math.random() * 1000)}`,
+    id: uuidv4(),
     ...jobData,
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString(),
   };
-  return addCustomerData(newJob);
+  await addCustomerData(newJob);
+  return newJob;
 };
 
-// Function to fetch customer jobs
-export const fetchCustomerJobs = (customerId) => {
-  const allJobs = readExcelFile();
-  return allJobs.filter(job => job.id === customerId);
+export const fetchCustomerJobs = async (customerId) => {
+  initializeData();
+  return customerData.filter(job => job.id === customerId);
 };
 
-// Function to generate PDF (placeholder)
 export const generateJobPDF = async (jobData, signature) => {
   console.log('Generating PDF for job:', jobData);
   console.log('With signature:', signature);
   return new Blob(['Simulated PDF content'], { type: 'application/pdf' });
 };
 
-// Function to send WhatsApp message (placeholder)
 export const sendWhatsAppMessage = async (phoneNumber, pdfBlob) => {
   console.log(`Simulating sending WhatsApp message to ${phoneNumber}`);
   console.log('PDF Blob:', pdfBlob);
   return 'MESSAGE_SID_12345';
 };
 
-// Function to fetch revenue data
-export const fetchRevenueData = () => {
-  const allJobs = readExcelFile();
+export const fetchRevenueData = async () => {
+  initializeData();
   const productRevenue = {};
   const dailyRevenue = {};
   const monthlyRevenue = {};
 
-  allJobs.forEach(job => {
-    // Product Revenue
-    productRevenue[job.device] = (productRevenue[job.device] || 0) + 100; // Assuming $100 per job
-
-    // Daily Revenue
-    dailyRevenue[job.date] = (dailyRevenue[job.date] || 0) + 100;
-
-    // Monthly Revenue
-    const month = job.date.substring(0, 7); // YYYY-MM
+  customerData.forEach(job => {
+    productRevenue[job.device] = (productRevenue[job.device] || 0) + 100;
+    const jobDate = new Date(job.date).toISOString().split('T')[0];
+    dailyRevenue[jobDate] = (dailyRevenue[jobDate] || 0) + 100;
+    const month = jobDate.substring(0, 7);
     monthlyRevenue[month] = (monthlyRevenue[month] || 0) + 100;
   });
 
@@ -107,43 +109,12 @@ export const fetchRevenueData = () => {
     productRevenue: Object.entries(productRevenue).map(([name, revenue]) => ({ name, revenue })),
     dailyRevenue: Object.entries(dailyRevenue).map(([date, revenue]) => ({ date, revenue })),
     monthlyRevenue: Object.entries(monthlyRevenue).map(([month, revenue]) => ({ month, revenue })),
-    highestPayments: allJobs.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map(job => ({
-      date: job.date,
-      amount: 100 // Assuming $100 per job
+    highestPayments: customerData.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5).map(job => ({
+      date: new Date(job.date).toISOString().split('T')[0],
+      amount: 100
     }))
   };
 };
 
-// Initialize Excel file with dummy data if it doesn't exist
-const initializeExcelFile = () => {
-  const existingData = readExcelFile();
-  if (existingData.length === 0) {
-    const dummyData = generateDummyData();
-    writeExcelFile(dummyData);
-    return dummyData;
-  }
-  return existingData;
-};
-
-// Generate 50 dummy customer data
-const generateDummyData = () => {
-  const dummyData = [];
-  for (let i = 1; i <= 50; i++) {
-    dummyData.push({
-      id: `CUST${i.toString().padStart(3, '0')}`,
-      name: `Customer ${i}`,
-      email: `customer${i}@example.com`,
-      phone: `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-      device: ['iPhone', 'Samsung', 'Google Pixel', 'OnePlus'][Math.floor(Math.random() * 4)],
-      problem: ['Screen Repair', 'Battery Replacement', 'Water Damage', 'Software Issue'][Math.floor(Math.random() * 4)],
-      status: ['Pending', 'In Progress', 'Completed'][Math.floor(Math.random() * 3)],
-      date: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toISOString().split('T')[0],
-      pdfUrl: `https://example.com/customer${i}_report.pdf`,
-      imageUrl: `https://example.com/customer${i}_device.jpg`
-    });
-  }
-  return dummyData;
-};
-
-// Initialize the Excel file when the module is imported
-initializeExcelFile();
+// Initialize the data when the module is imported
+initializeData();
