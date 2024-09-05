@@ -23,8 +23,12 @@ const CustomerDetails = ({ customer }) => (
         <p>Problem: {customer.problem}</p>
         <p>Status: {customer.status}</p>
         <p>Date: {customer.date}</p>
-        <img src={customer.imageUrl} alt="Device" className="w-full h-auto" />
-        <Button onClick={() => window.open(customer.pdfUrl, '_blank')}>View PDF</Button>
+        {customer.imageUrl && (
+          <img src={customer.imageUrl} alt="Device" className="w-full h-auto" />
+        )}
+        {customer.pdfUrl && (
+          <Button onClick={() => window.open(customer.pdfUrl, '_blank')}>View PDF</Button>
+        )}
       </div>
     </DialogContent>
   </Dialog>
@@ -78,7 +82,7 @@ const Customers = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {customers.map((customer) => (
+          {customers && customers.map((customer) => (
             <TableRow key={customer.id}>
               <TableCell>{customer.id}</TableCell>
               <TableCell>{customer.name}</TableCell>
