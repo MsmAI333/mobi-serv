@@ -16,7 +16,7 @@ const CustomerDetailsPopup = ({ customer }) => {
       <DialogTrigger asChild>
         <Button variant="link">{customer.name}</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="w-full max-w-3xl">
         <DialogHeader>
           <DialogTitle>Customer Details</DialogTitle>
         </DialogHeader>
@@ -33,32 +33,37 @@ const CustomerDetailsPopup = ({ customer }) => {
           ) : isError ? (
             <p>Error loading job history</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Job ID</TableHead>
-                  <TableHead>Device</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {jobs.map((job) => (
-                  <TableRow key={job.id}>
-                    <TableCell>{job.id}</TableCell>
-                    <TableCell>{job.device}</TableCell>
-                    <TableCell>{job.status}</TableCell>
-                    <TableCell>{job.date}</TableCell>
-                    <TableCell>
-                      <Button variant="link" onClick={() => window.open(job.pdfUrl, '_blank')}>
-                        View PDF
-                      </Button>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Job ID</TableHead>
+                    <TableHead>Device</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {jobs.map((job) => (
+                    <TableRow key={job.id}>
+                      <TableCell>{job.id}</TableCell>
+                      <TableCell>{job.device}</TableCell>
+                      <TableCell>{job.status}</TableCell>
+                      <TableCell>{job.date}</TableCell>
+                      <TableCell>
+                        <Button variant="link" onClick={() => window.open(job.pdfUrl, '_blank')}>
+                          View PDF
+                        </Button>
+                        <Button variant="link" onClick={() => window.open(job.imageUrl, '_blank')}>
+                          View Image
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </div>
       </DialogContent>

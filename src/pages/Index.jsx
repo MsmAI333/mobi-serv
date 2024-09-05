@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,27 +9,33 @@ import Analytics from '../components/Analytics';
 import Navigation from '../components/Navigation';
 import { useQuery } from '@tanstack/react-query';
 import CustomerSearch from '../components/CustomerSearch';
-
-const fetchDashboardData = async () => {
-  // TODO: Replace this with actual API call to fetch data from Excel
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return {
-    totalJobs: 1234,
-    ongoingJobs: 42,
-    completedToday: 16,
-    revenueToday: 1234
-  };
-};
+import { fetchCustomersFromExcel } from '../utils/dataUtils';
 
 const Index = () => {
   const navigate = useNavigate();
 
   const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
     queryKey: ['dashboardData'],
-    queryFn: fetchDashboardData,
+    queryFn: fetchCustomersFromExcel,
   });
 
+  useEffect(() => {
+    const handleResize = () => {
+      document.body.style.zoom = window.innerWidth > 768 ? 1 : window.innerWidth / 768;
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (dashboardLoading) return <div>Loading...</div>;
+
+  const totalJobs = dashboardData.length;
+  const ongoingJobs = dashboardData.filter(job => job.status === 'In Progress').length;
+  const completedToday = dashboardData.filter(job => job.status === 'Completed' && job.date === new Date().toISOString().split('T')[0]).length;
+  const revenueToday = completedToday * 100; // Assuming $100 per job
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -65,7 +71,7 @@ const Index = () => {
                   <Smartphone className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{dashboardData.totalJobs}</div>
+                  <div className="text-2xl font-bold">{totalJobs}</div>
                 </CardContent>
               </Card>
             </Link>
@@ -76,7 +82,7 @@ const Index = () => {
                   <Laptop className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{dashboardData.ongoingJobs}</div>
+                  <div className="text-2xl font-bold">{ongoingJobs}</div>
                 </CardContent>
               </Card>
             </Link>
@@ -87,7 +93,7 @@ const Index = () => {
                   <BarChart2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{dashboardData.completedToday}</div>
+                  <div className="text-2xl font-bold">{completedToday}</div>
                 </CardContent>
               </Card>
             </Link>
@@ -98,7 +104,7 @@ const Index = () => {
                   <BarChart2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${dashboardData.revenueToday}</div>
+                  <div className="text-2xl font-bold">${revenueToday}</div>
                 </CardContent>
               </Card>
             </Link>
