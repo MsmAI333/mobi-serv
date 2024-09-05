@@ -56,3 +56,10 @@ export const fetchRevenueData = async () => {
     }))
   };
 };
+
+export const generateJobPDF = async (jobData, signature) => {
+  // Simulating PDF generation
+  console.log('Generating PDF for job:', jobData);
+  console.log('With signature:', signature);
+  return new Blob(['Simulated PDF content'], { type: 'application/pdf' });
+};
