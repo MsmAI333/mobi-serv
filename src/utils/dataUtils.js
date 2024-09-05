@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 const EXCEL_FILE_NAME = 'customer_data.xlsx';
 
 // Function to read data from Excel file
-export const readExcelFile = () => {
+const readExcelFile = () => {
   try {
     const workbook = XLSX.readFile(EXCEL_FILE_NAME);
     const sheetName = workbook.SheetNames[0];
@@ -26,46 +26,35 @@ const writeExcelFile = (data) => {
 // Function to add new customer data
 export const addCustomerData = (newCustomer) => {
   const existingData = readExcelFile();
-  existingData.push(newCustomer);
-  writeExcelFile(existingData);
-  return existingData;
+  const updatedData = [...existingData, newCustomer];
+  writeExcelFile(updatedData);
+  return updatedData;
 };
 
-// Generate 50 dummy customer data if the file doesn't exist
-export const initializeExcelFile = () => {
-  const existingData = readExcelFile();
-  if (existingData.length === 0) {
-    const dummyData = generateDummyData();
-    writeExcelFile(dummyData);
-    return dummyData;
-  }
-  return existingData;
+// Function to edit customer data
+export const editCustomerData = (customerId, updatedData) => {
+  const allData = readExcelFile();
+  const updatedCustomers = allData.map(customer => 
+    customer.id === customerId ? { ...customer, ...updatedData } : customer
+  );
+  writeExcelFile(updatedCustomers);
+  return updatedCustomers;
 };
 
-// Generate 50 dummy customer data
-const generateDummyData = () => {
-  const dummyData = [];
-  for (let i = 1; i <= 50; i++) {
-    dummyData.push({
-      id: `CUST${i.toString().padStart(3, '0')}`,
-      name: `Customer ${i}`,
-      email: `customer${i}@example.com`,
-      phone: `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-      device: ['iPhone', 'Samsung', 'Google Pixel', 'OnePlus'][Math.floor(Math.random() * 4)],
-      problem: ['Screen Repair', 'Battery Replacement', 'Water Damage', 'Software Issue'][Math.floor(Math.random() * 4)],
-      status: ['Pending', 'In Progress', 'Completed'][Math.floor(Math.random() * 3)],
-      date: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toISOString().split('T')[0],
-      pdfUrl: `https://example.com/customer${i}_report.pdf`,
-      imageUrl: `https://example.com/customer${i}_device.jpg`
-    });
-  }
-  return dummyData;
+// Function to delete customer data
+export const deleteCustomerData = (customerId) => {
+  const allData = readExcelFile();
+  const updatedData = allData.filter(customer => customer.id !== customerId);
+  writeExcelFile(updatedData);
+  return updatedData;
 };
 
+// Function to fetch all customer data
 export const fetchCustomersFromExcel = () => {
-  return initializeExcelFile();
+  return readExcelFile();
 };
 
+// Function to save new job
 export const saveJobToExcel = (jobData) => {
   const newJob = {
     id: `JOB${Math.floor(Math.random() * 1000)}`,
@@ -75,17 +64,27 @@ export const saveJobToExcel = (jobData) => {
   return addCustomerData(newJob);
 };
 
+// Function to fetch customer jobs
 export const fetchCustomerJobs = (customerId) => {
   const allJobs = readExcelFile();
   return allJobs.filter(job => job.id === customerId);
 };
 
+// Function to generate PDF (placeholder)
+export const generateJobPDF = async (jobData, signature) => {
+  console.log('Generating PDF for job:', jobData);
+  console.log('With signature:', signature);
+  return new Blob(['Simulated PDF content'], { type: 'application/pdf' });
+};
+
+// Function to send WhatsApp message (placeholder)
 export const sendWhatsAppMessage = async (phoneNumber, pdfBlob) => {
   console.log(`Simulating sending WhatsApp message to ${phoneNumber}`);
   console.log('PDF Blob:', pdfBlob);
   return 'MESSAGE_SID_12345';
 };
 
+// Function to fetch revenue data
 export const fetchRevenueData = () => {
   const allJobs = readExcelFile();
   const productRevenue = {};
@@ -115,26 +114,36 @@ export const fetchRevenueData = () => {
   };
 };
 
-export const generateJobPDF = async (jobData, signature) => {
-  // Simulating PDF generation
-  console.log('Generating PDF for job:', jobData);
-  console.log('With signature:', signature);
-  return new Blob(['Simulated PDF content'], { type: 'application/pdf' });
-};
-
-export const editCustomerData = (customerId, updatedData) => {
-  const allData = readExcelFile();
-  const index = allData.findIndex(customer => customer.id === customerId);
-  if (index !== -1) {
-    allData[index] = { ...allData[index], ...updatedData };
-    writeExcelFile(allData);
+// Initialize Excel file with dummy data if it doesn't exist
+const initializeExcelFile = () => {
+  const existingData = readExcelFile();
+  if (existingData.length === 0) {
+    const dummyData = generateDummyData();
+    writeExcelFile(dummyData);
+    return dummyData;
   }
-  return allData;
+  return existingData;
 };
 
-export const deleteCustomerData = (customerId) => {
-  const allData = readExcelFile();
-  const updatedData = allData.filter(customer => customer.id !== customerId);
-  writeExcelFile(updatedData);
-  return updatedData;
+// Generate 50 dummy customer data
+const generateDummyData = () => {
+  const dummyData = [];
+  for (let i = 1; i <= 50; i++) {
+    dummyData.push({
+      id: `CUST${i.toString().padStart(3, '0')}`,
+      name: `Customer ${i}`,
+      email: `customer${i}@example.com`,
+      phone: `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+      device: ['iPhone', 'Samsung', 'Google Pixel', 'OnePlus'][Math.floor(Math.random() * 4)],
+      problem: ['Screen Repair', 'Battery Replacement', 'Water Damage', 'Software Issue'][Math.floor(Math.random() * 4)],
+      status: ['Pending', 'In Progress', 'Completed'][Math.floor(Math.random() * 3)],
+      date: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toISOString().split('T')[0],
+      pdfUrl: `https://example.com/customer${i}_report.pdf`,
+      imageUrl: `https://example.com/customer${i}_device.jpg`
+    });
+  }
+  return dummyData;
 };
+
+// Initialize the Excel file when the module is imported
+initializeExcelFile();
