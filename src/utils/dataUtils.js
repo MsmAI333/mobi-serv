@@ -68,3 +68,38 @@ export const sendWhatsAppMessage = async (phoneNumber, pdfBlob) => {
   
   return message.sid;
 };
+
+export const fetchRevenueData = async () => {
+  // Simulating API call with dummy data
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return {
+    productRevenue: [
+      { name: 'iPhone Repair', revenue: 5000 },
+      { name: 'Samsung Repair', revenue: 4500 },
+      { name: 'iPad Repair', revenue: 3000 },
+      { name: 'MacBook Repair', revenue: 6000 },
+      { name: 'Other Repairs', revenue: 2500 },
+    ],
+    dailyRevenue: [
+      { date: '2023-03-01', revenue: 1000 },
+      { date: '2023-03-02', revenue: 1200 },
+      { date: '2023-03-03', revenue: 900 },
+      { date: '2023-03-04', revenue: 1500 },
+      { date: '2023-03-05', revenue: 1100 },
+    ],
+    monthlyRevenue: [
+      { month: 'Jan', revenue: 15000 },
+      { month: 'Feb', revenue: 18000 },
+      { month: 'Mar', revenue: 22000 },
+      { month: 'Apr', revenue: 20000 },
+      { month: 'May', revenue: 25000 },
+    ],
+    highestPayments: [
+      { date: '2023-03-04', amount: 1500 },
+      { date: '2023-03-02', amount: 1200 },
+      { date: '2023-03-05', amount: 1100 },
+      { date: '2023-03-01', amount: 1000 },
+      { date: '2023-03-03', amount: 900 },
+    ],
+  };
+};
