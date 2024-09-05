@@ -4,19 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Navigation from '../components/Navigation';
 import { useQuery } from '@tanstack/react-query';
+import CustomerDetails from '../components/CustomerDetails';
 
 const fetchJobs = async () => {
   // Simulating API call with dummy data
   await new Promise(resolve => setTimeout(resolve, 500));
   return [
-    { id: 1, customer: 'John Doe', device: 'iPhone 12', status: 'Started', customerId: 'CUST001', date: '2023-03-15' },
-    { id: 2, customer: 'Jane Smith', device: 'Samsung Galaxy S21', status: 'Ongoing', customerId: 'CUST002', date: '2023-03-16' },
-    { id: 3, customer: 'Bob Johnson', device: 'MacBook Pro', status: 'Completed', customerId: 'CUST003', date: '2023-03-17' },
-    { id: 4, customer: 'Alice Brown', device: 'iPad Air', status: 'Started', customerId: 'CUST004', date: '2023-03-18' },
-    { id: 5, customer: 'Charlie Davis', device: 'Google Pixel 5', status: 'Ongoing', customerId: 'CUST005', date: '2023-03-19' },
+    { id: 1, customer: { id: 'CUST001', name: 'John Doe', email: 'john@example.com', phone: '123-456-7890' }, device: 'iPhone 12', status: 'Started', date: '2023-03-15' },
+    { id: 2, customer: { id: 'CUST002', name: 'Jane Smith', email: 'jane@example.com', phone: '234-567-8901' }, device: 'Samsung Galaxy S21', status: 'Ongoing', date: '2023-03-16' },
+    { id: 3, customer: { id: 'CUST003', name: 'Bob Johnson', email: 'bob@example.com', phone: '345-678-9012' }, device: 'MacBook Pro', status: 'Completed', date: '2023-03-17' },
+    { id: 4, customer: { id: 'CUST004', name: 'Alice Brown', email: 'alice@example.com', phone: '456-789-0123' }, device: 'iPad Air', status: 'Started', date: '2023-03-18' },
+    { id: 5, customer: { id: 'CUST005', name: 'Charlie Davis', email: 'charlie@example.com', phone: '567-890-1234' }, device: 'Google Pixel 5', status: 'Ongoing', date: '2023-03-19' },
   ];
 };
 
@@ -32,6 +33,7 @@ const AllJobs = () => {
     Object.entries(filters).every(([key, value]) => {
       if (!value) return true;
       if (key === 'date' && value === 'today') return job.date === new Date().toISOString().split('T')[0];
+      if (key === 'customer') return job.customer.name.toLowerCase().includes(value.toLowerCase());
       return job[key].toString().toLowerCase().includes(value.toLowerCase());
     })
   ) || [];
@@ -89,9 +91,7 @@ const AllJobs = () => {
             <TableRow key={job.id}>
               <TableCell>{job.id}</TableCell>
               <TableCell>
-                <Link to={`/customers/${job.customerId}`} className="text-blue-500 hover:underline">
-                  {job.customer}
-                </Link>
+                <CustomerDetails customer={job.customer} jobs={jobs.filter(j => j.customer.id === job.customer.id)} />
               </TableCell>
               <TableCell>{job.device}</TableCell>
               <TableCell>{job.status}</TableCell>

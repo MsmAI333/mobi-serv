@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Home, List, Users, BarChart2 } from 'lucide-react';
+import { Home, List, Users, BarChart2, DollarSign } from 'lucide-react';
 
 const Navigation = () => {
   const location = useLocation();
@@ -34,6 +34,12 @@ const Navigation = () => {
         <Button variant="ghost" className={isActive('/product-analysis')}>
           <BarChart2 className="mr-2 h-4 w-4" />
           Product Analysis
+        </Button>
+      </Link>
+      <Link to="/revenue-analysis">
+        <Button variant="ghost" className={isActive('/revenue-analysis')}>
+          <DollarSign className="mr-2 h-4 w-4" />
+          Revenue Analysis
         </Button>
       </Link>
     </nav>
