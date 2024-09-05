@@ -3,39 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import Navigation from '../components/Navigation';
 import { useQuery } from '@tanstack/react-query';
-
-const fetchRevenueData = async () => {
-  // TODO: Replace this with actual API call to fetch data from Excel
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return {
-    productRevenue: [
-      { name: 'iPhone Repair', revenue: 5000 },
-      { name: 'Samsung Repair', revenue: 4000 },
-      { name: 'MacBook Repair', revenue: 3000 },
-      { name: 'iPad Repair', revenue: 2000 },
-      { name: 'Other', revenue: 1000 },
-    ],
-    dailyRevenue: [
-      { date: '2023-03-01', revenue: 1000 },
-      { date: '2023-03-02', revenue: 1500 },
-      { date: '2023-03-03', revenue: 1200 },
-      { date: '2023-03-04', revenue: 1800 },
-      { date: '2023-03-05', revenue: 2000 },
-    ],
-    monthlyRevenue: [
-      { month: 'Jan', revenue: 30000 },
-      { month: 'Feb', revenue: 35000 },
-      { month: 'Mar', revenue: 40000 },
-      { month: 'Apr', revenue: 38000 },
-      { month: 'May', revenue: 42000 },
-    ],
-    highestPayments: [
-      { date: '2023-03-05', amount: 500 },
-      { date: '2023-03-02', amount: 450 },
-      { date: '2023-03-04', amount: 400 },
-    ],
-  };
-};
+import { fetchRevenueData } from '../utils/dataUtils';
 
 const RevenueAnalysis = () => {
   const { data: revenueData, isLoading, isError } = useQuery({
