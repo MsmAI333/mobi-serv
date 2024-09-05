@@ -1,35 +1,24 @@
 import { v4 as uuidv4 } from 'uuid';
-import * as XLSX from 'xlsx';
-import { writeFile, readFile, access } from 'fs/promises';
 
-const EXCEL_FILE_NAME = 'customer_data.xlsx';
+const STORAGE_KEY = 'customer_data';
 
 let customerData = [];
 
-const saveToExcel = async () => {
-  const worksheet = XLSX.utils.json_to_sheet(customerData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Customers');
-  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
-  await writeFile(EXCEL_FILE_NAME, excelBuffer);
+const saveToLocalStorage = () => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(customerData));
 };
 
-const loadFromExcel = async () => {
-  try {
-    await access(EXCEL_FILE_NAME);
-    const buffer = await readFile(EXCEL_FILE_NAME);
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-    customerData = XLSX.utils.sheet_to_json(worksheet);
-  } catch (error) {
-    console.log('Excel file not found. Creating a new one.');
+const loadFromLocalStorage = () => {
+  const storedData = localStorage.getItem(STORAGE_KEY);
+  if (storedData) {
+    customerData = JSON.parse(storedData);
+  } else {
     customerData = [];
-    await saveToExcel();
   }
 };
 
-const initializeData = async () => {
-  await loadFromExcel();
+const initializeData = () => {
+  loadFromLocalStorage();
   if (customerData.length === 0) {
     for (let i = 1; i <= 50; i++) {
       customerData.push({
@@ -45,19 +34,19 @@ const initializeData = async () => {
         imageUrl: `https://example.com/customer${i}_device.jpg`
       });
     }
-    await saveToExcel();
+    saveToLocalStorage();
   }
 };
 
 export const fetchCustomersFromExcel = async () => {
-  await initializeData();
+  initializeData();
   return customerData;
 };
 
 export const addCustomerData = async (newCustomer) => {
   const customerWithId = { ...newCustomer, id: uuidv4(), date: new Date().toISOString() };
   customerData.push(customerWithId);
-  await saveToExcel();
+  saveToLocalStorage();
   return customerData;
 };
 
@@ -65,13 +54,13 @@ export const editCustomerData = async (customerId, updatedData) => {
   customerData = customerData.map(customer => 
     customer.id === customerId ? { ...customer, ...updatedData, date: new Date().toISOString() } : customer
   );
-  await saveToExcel();
+  saveToLocalStorage();
   return customerData;
 };
 
 export const deleteCustomerData = async (customerId) => {
   customerData = customerData.filter(customer => customer.id !== customerId);
-  await saveToExcel();
+  saveToLocalStorage();
   return customerData;
 };
 
@@ -86,7 +75,7 @@ export const saveJobToExcel = async (jobData) => {
 };
 
 export const fetchCustomerJobs = async (customerId) => {
-  await initializeData();
+  initializeData();
   return customerData.filter(job => job.id === customerId);
 };
 
@@ -103,7 +92,7 @@ export const sendWhatsAppMessage = async (phoneNumber, pdfBlob) => {
 };
 
 export const fetchRevenueData = async () => {
-  await initializeData();
+  initializeData();
   const productRevenue = {};
   const dailyRevenue = {};
   const monthlyRevenue = {};
