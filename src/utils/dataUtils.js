@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 
-// Simulated in-memory database
+// In-memory database
 let customerData = [];
 
-// Initialize with some dummy data
+// Initialize with dummy data
 const initializeData = () => {
   if (customerData.length === 0) {
     for (let i = 1; i <= 50; i++) {
@@ -23,20 +23,20 @@ const initializeData = () => {
   }
 };
 
-// Function to fetch all customer data
+// Fetch all customer data
 export const fetchCustomersFromExcel = () => {
   initializeData();
   return Promise.resolve(customerData);
 };
 
-// Function to add new customer data
+// Add new customer data
 export const addCustomerData = (newCustomer) => {
   const customerWithId = { ...newCustomer, id: uuidv4() };
   customerData.push(customerWithId);
   return Promise.resolve(customerData);
 };
 
-// Function to edit customer data
+// Edit customer data
 export const editCustomerData = (customerId, updatedData) => {
   customerData = customerData.map(customer => 
     customer.id === customerId ? { ...customer, ...updatedData } : customer
@@ -44,13 +44,13 @@ export const editCustomerData = (customerId, updatedData) => {
   return Promise.resolve(customerData);
 };
 
-// Function to delete customer data
+// Delete customer data
 export const deleteCustomerData = (customerId) => {
   customerData = customerData.filter(customer => customer.id !== customerId);
   return Promise.resolve(customerData);
 };
 
-// Function to save new job
+// Save new job
 export const saveJobToExcel = (jobData) => {
   const newJob = {
     id: uuidv4(),
@@ -60,40 +60,35 @@ export const saveJobToExcel = (jobData) => {
   return addCustomerData(newJob);
 };
 
-// Function to fetch customer jobs
+// Fetch customer jobs
 export const fetchCustomerJobs = (customerId) => {
   return Promise.resolve(customerData.filter(job => job.id === customerId));
 };
 
-// Function to generate PDF (placeholder)
+// Generate PDF (placeholder)
 export const generateJobPDF = async (jobData, signature) => {
   console.log('Generating PDF for job:', jobData);
   console.log('With signature:', signature);
   return new Blob(['Simulated PDF content'], { type: 'application/pdf' });
 };
 
-// Function to send WhatsApp message (placeholder)
+// Send WhatsApp message (placeholder)
 export const sendWhatsAppMessage = async (phoneNumber, pdfBlob) => {
   console.log(`Simulating sending WhatsApp message to ${phoneNumber}`);
   console.log('PDF Blob:', pdfBlob);
   return 'MESSAGE_SID_12345';
 };
 
-// Function to fetch revenue data
+// Fetch revenue data
 export const fetchRevenueData = () => {
   const productRevenue = {};
   const dailyRevenue = {};
   const monthlyRevenue = {};
 
   customerData.forEach(job => {
-    // Product Revenue
-    productRevenue[job.device] = (productRevenue[job.device] || 0) + 100; // Assuming $100 per job
-
-    // Daily Revenue
+    productRevenue[job.device] = (productRevenue[job.device] || 0) + 100;
     dailyRevenue[job.date] = (dailyRevenue[job.date] || 0) + 100;
-
-    // Monthly Revenue
-    const month = job.date.substring(0, 7); // YYYY-MM
+    const month = job.date.substring(0, 7);
     monthlyRevenue[month] = (monthlyRevenue[month] || 0) + 100;
   });
 
@@ -103,7 +98,7 @@ export const fetchRevenueData = () => {
     monthlyRevenue: Object.entries(monthlyRevenue).map(([month, revenue]) => ({ month, revenue })),
     highestPayments: customerData.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map(job => ({
       date: job.date,
-      amount: 100 // Assuming $100 per job
+      amount: 100
     }))
   });
 };
