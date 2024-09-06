@@ -74,6 +74,19 @@ export const fetchCustomerJobs = async (customerId) => {
   return customerData.filter(job => job.customerId === customerId);
 };
 
+export const fetchJobs = async () => {
+  await fetchCustomersFromExcel();
+  return customerData.map(job => ({
+    ...job,
+    customer: {
+      id: job.customerId,
+      name: job.customerName,
+      email: job.email,
+      phone: job.phone
+    }
+  }));
+};
+
 export const fetchRevenueData = async () => {
   await fetchCustomersFromExcel();
   const productRevenue = {};
