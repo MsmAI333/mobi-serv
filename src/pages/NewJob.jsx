@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Camera } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import CustomerSearch from '../components/CustomerSearch';
-import { saveJobToExcel, getDeviceProblems } from '../utils/dataUtils';
+import { saveJobToExcel, getDeviceProblems, generateJobNumber } from '../utils/dataUtils';
 import SignatureCanvas from 'react-signature-canvas';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -23,12 +23,12 @@ const NewJob = () => {
     deviceType: '',
     selectedProblem: '',
     deviceConditions: {
-      Charging: 'No',
-      Battery: 'No',
-      Screen: 'No',
-      Audio: 'No',
-      WiFi: 'No',
-      Camera: 'No'
+      Charging: false,
+      Battery: false,
+      Screen: false,
+      Audio: false,
+      WiFi: false,
+      Camera: false
     },
     devicePhoto: null,
     advancePayment: ''
@@ -41,7 +41,8 @@ const NewJob = () => {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      const savedJob = await saveJobToExcel(data);
+      const jobNumber = await generateJobNumber();
+      const savedJob = await saveJobToExcel({ ...data, jobNumber });
       return savedJob;
     },
     onSuccess: () => {
@@ -85,16 +86,16 @@ const NewJob = () => {
       ...prev,
       deviceConditions: {
         ...prev.deviceConditions,
-        [condition]: prev.deviceConditions[condition] === 'Yes' ? 'No' : 'Yes'
+        [condition]: !prev.deviceConditions[condition]
       }
     }));
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="max-w-3xl mx-auto">
+    <div className="container mx-auto py-10 px-4">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Add New Job</CardTitle>
+          <CardTitle className="text-2xl font-bold">Add New Job</CardTitle>
           <Navigation />
         </CardHeader>
         <CardContent>
@@ -107,65 +108,50 @@ const NewJob = () => {
                 emailAddress: customer.email
               }));
             }} />
-            <div>
-              <Label htmlFor="customerName">Customer Name</Label>
-              <Input
-                id="customerName"
-                value={jobData.customerName}
-                onChange={(e) => handleInputChange('customerName', e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="phoneNumber">Phone Number</Label>
-              <Input
-                id="phoneNumber"
-                value={jobData.phoneNumber}
-                onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="emailAddress">Email Address</Label>
-              <Input
-                id="emailAddress"
-                value={jobData.emailAddress}
-                onChange={(e) => handleInputChange('emailAddress', e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="deviceType">Device Type</Label>
-              <Select
-                value={jobData.deviceType}
-                onValueChange={(value) => handleInputChange('deviceType', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select device type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="phone">Phone</SelectItem>
-                  <SelectItem value="laptop">Laptop</SelectItem>
-                  <SelectItem value="tablet">Tablet</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="selectedProblem">Problem</Label>
-              <Select
-                value={jobData.selectedProblem}
-                onValueChange={(value) => handleInputChange('selectedProblem', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select problem" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getDeviceProblems().map((problem) => (
-                    <SelectItem key={problem} value={problem}>{problem}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Input
+              placeholder="Customer Name"
+              value={jobData.customerName}
+              onChange={(e) => handleInputChange('customerName', e.target.value)}
+              required
+            />
+            <Input
+              placeholder="Phone Number"
+              value={jobData.phoneNumber}
+              onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+              required
+            />
+            <Input
+              placeholder="Email Address"
+              value={jobData.emailAddress}
+              onChange={(e) => handleInputChange('emailAddress', e.target.value)}
+              required
+            />
+            <Select
+              value={jobData.deviceType}
+              onValueChange={(value) => handleInputChange('deviceType', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select device type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="phone">Phone</SelectItem>
+                <SelectItem value="laptop">Laptop</SelectItem>
+                <SelectItem value="tablet">Tablet</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={jobData.selectedProblem}
+              onValueChange={(value) => handleInputChange('selectedProblem', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select problem" />
+              </SelectTrigger>
+              <SelectContent>
+                {getDeviceProblems().map((problem) => (
+                  <SelectItem key={problem} value={problem}>{problem}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <div>
               <Label>Device Condition</Label>
               <div className="grid grid-cols-2 gap-2 mt-2">
@@ -173,10 +159,10 @@ const NewJob = () => {
                   <Button
                     key={item}
                     type="button"
-                    variant={condition === 'Yes' ? 'default' : 'outline'}
+                    variant={condition ? 'default' : 'outline'}
                     onClick={() => toggleDeviceCondition(item)}
                   >
-                    {item}: {condition}
+                    {item}: {condition ? 'Yes' : 'No'}
                   </Button>
                 ))}
               </div>
@@ -192,26 +178,21 @@ const NewJob = () => {
               />
               <Button type="button" onClick={() => fileInputRef.current.click()}>
                 <Camera className="mr-2 h-4 w-4" />
-                Upload Photo
+                Take Photo
               </Button>
               {jobData.devicePhoto && (
                 <img src={jobData.devicePhoto} alt="Device" className="mt-2 max-w-full h-auto" />
               )}
             </div>
-            <div>
-              <Label htmlFor="advancePayment">Advance Payment</Label>
-              <Input
-                id="advancePayment"
-                type="number"
-                value={jobData.advancePayment}
-                onChange={(e) => handleInputChange('advancePayment', e.target.value)}
-              />
-            </div>
-            <div className="flex justify-end">
-              <Button type="submit" disabled={mutation.isLoading}>
-                {mutation.isLoading ? 'Creating...' : 'Create Job Sheet'}
-              </Button>
-            </div>
+            <Input
+              placeholder="Advance Payment"
+              type="number"
+              value={jobData.advancePayment}
+              onChange={(e) => handleInputChange('advancePayment', e.target.value)}
+            />
+            <Button type="submit" disabled={mutation.isLoading}>
+              {mutation.isLoading ? 'Creating...' : 'Create Job Sheet'}
+            </Button>
           </form>
         </CardContent>
       </Card>
