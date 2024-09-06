@@ -8,7 +8,18 @@ import { useNavigate } from 'react-router-dom';
 import Navigation from '../components/Navigation';
 import { useQuery } from '@tanstack/react-query';
 import CustomerDetails from '../components/CustomerDetails';
-import { fetchJobs } from '../utils/dataUtils';
+
+const fetchJobs = async () => {
+  // Simulating API call with dummy data
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return [
+    { id: 1, customer: { id: 'CUST001', name: 'John Doe', email: 'john@example.com', phone: '123-456-7890' }, device: 'iPhone 12', status: 'Started', date: '2023-03-15' },
+    { id: 2, customer: { id: 'CUST002', name: 'Jane Smith', email: 'jane@example.com', phone: '234-567-8901' }, device: 'Samsung Galaxy S21', status: 'Ongoing', date: '2023-03-16' },
+    { id: 3, customer: { id: 'CUST003', name: 'Bob Johnson', email: 'bob@example.com', phone: '345-678-9012' }, device: 'MacBook Pro', status: 'Completed', date: '2023-03-17' },
+    { id: 4, customer: { id: 'CUST004', name: 'Alice Brown', email: 'alice@example.com', phone: '456-789-0123' }, device: 'iPad Air', status: 'Started', date: '2023-03-18' },
+    { id: 5, customer: { id: 'CUST005', name: 'Charlie Davis', email: 'charlie@example.com', phone: '567-890-1234' }, device: 'Google Pixel 5', status: 'Ongoing', date: '2023-03-19' },
+  ];
+};
 
 const AllJobs = () => {
   const navigate = useNavigate();
@@ -49,7 +60,7 @@ const AllJobs = () => {
             <SelectValue placeholder="Filter by Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="Started">Started</SelectItem>
             <SelectItem value="Ongoing">Ongoing</SelectItem>
             <SelectItem value="Completed">Completed</SelectItem>
@@ -60,7 +71,7 @@ const AllJobs = () => {
             <SelectValue placeholder="Filter by Date" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="today">Today</SelectItem>
           </SelectContent>
         </Select>
