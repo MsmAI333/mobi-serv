@@ -3,40 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Search } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { fetchCustomersFromExcel } from '../utils/dataUtils';
 
-const fetchCustomers = async (query) => {
-  // TODO: Replace this with actual API call to fetch data from Excel
-  await new Promise(resolve => setTimeout(resolve, 500));
-  const allCustomers = [
-    { id: 'CUST001', name: 'John Doe', phone: '123-456-7890', email: 'john@example.com' },
-    { id: 'CUST002', name: 'Jane Smith', phone: '234-567-8901', email: 'jane@example.com' },
-    { id: 'CUST003', name: 'Bob Johnson', phone: '345-678-9012', email: 'bob@example.com' },
-  ];
-  return allCustomers.filter(customer => 
-    customer.name.toLowerCase().includes(query.toLowerCase()) ||
-    customer.phone.includes(query) ||
-    customer.email.toLowerCase().includes(query.toLowerCase())
-  );
-};
-
-const CustomerSearch = () => {
+const CustomerSearch = ({ onSelect }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
-  const { data: searchResults, refetch } = useQuery({
-    queryKey: ['customerSearch', searchQuery],
-    queryFn: () => fetchCustomers(searchQuery),
-    enabled: false,
+  const { data: allCustomers, isLoading, isError } = useQuery({
+    queryKey: ['customers'],
+    queryFn: fetchCustomersFromExcel,
   });
 
-  useEffect(() => {
-    if (searchQuery.length > 2) {
-      refetch();
-    }
-  }, [searchQuery, refetch]);
+  const searchResults = allCustomers?.filter(customer => 
+    customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    customer.phone.includes(searchQuery) ||
+    customer.email.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
 
-  const handleSearchResultClick = (customerId) => {
-    navigate(`/customers/${customerId}`);
+  const handleSearchResultClick = (customer) => {
+    if (onSelect) {
+      onSelect(customer);
+    } else {
+      navigate(`/customers/${customer.id}`);
+    }
   };
 
   return (
@@ -49,13 +38,13 @@ const CustomerSearch = () => {
         onChange={(e) => setSearchQuery(e.target.value)}
       />
       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-      {searchResults && searchResults.length > 0 && (
+      {searchQuery.length > 2 && searchResults.length > 0 && (
         <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
           {searchResults.map((result) => (
             <div
               key={result.id}
               className="p-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => handleSearchResultClick(result.id)}
+              onClick={() => handleSearchResultClick(result)}
             >
               {result.name} - {result.phone}
             </div>
