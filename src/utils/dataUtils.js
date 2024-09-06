@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as XLSX from 'xlsx';
 
-const EXCEL_FILE_PATH = '/data/customer_data.xlsx';
+const EXCEL_FILE_PATH = '/data.xlsx';
 
 let customerData = [];
 
@@ -24,53 +24,62 @@ const writeExcelFile = (data) => {
   XLSX.writeFile(workbook, EXCEL_FILE_PATH);
 };
 
-const initializeData = () => {
-  customerData = readExcelFile();
-  if (customerData.length === 0) {
-    for (let i = 1; i <= 10; i++) {
-      const customerId = uuidv4();
-      for (let j = 1; j <= 2; j++) {
-        customerData.push({
-          id: uuidv4(),
-          customerId: customerId,
-          customerName: `Customer ${i}`,
-          email: `customer${i}@example.com`,
-          phone: `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-          device: ['iPhone', 'Samsung', 'Google Pixel', 'OnePlus'][Math.floor(Math.random() * 4)],
-          problem: ['Screen Repair', 'Battery Replacement', 'Water Damage', 'Software Issue'][Math.floor(Math.random() * 4)],
-          status: ['Pending', 'In Progress', 'Completed'][Math.floor(Math.random() * 3)],
-          date: new Date().toISOString(),
-          serialNumber: `JOB-${i}-${j}`,
-          photoUrl: `https://example.com/job${i}_${j}_photo.jpg`,
-          pdfUrl: `https://example.com/job${i}_${j}_report.pdf`
-        });
-      }
-    }
-    writeExcelFile(customerData);
+const generateRandomCustomer = () => {
+  const devices = ['iPhone', 'Samsung', 'Google Pixel', 'OnePlus'];
+  const problems = ['Screen Repair', 'Battery Replacement', 'Water Damage', 'Software Issue'];
+  const statuses = ['Pending', 'In Progress', 'Completed'];
+
+  return {
+    id: uuidv4(),
+    customerId: uuidv4(),
+    customerName: `Customer ${Math.floor(Math.random() * 1000)}`,
+    email: `customer${Math.floor(Math.random() * 1000)}@example.com`,
+    phone: `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+    device: devices[Math.floor(Math.random() * devices.length)],
+    problem: problems[Math.floor(Math.random() * problems.length)],
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    date: new Date().toISOString(),
+    serialNumber: `JOB-${Math.floor(Math.random() * 10000)}`,
+    photoUrl: `https://example.com/job_photo.jpg`,
+    pdfUrl: `https://example.com/job_report.pdf`,
+    deviceConditions: {
+      Charging: Math.random() < 0.5 ? 'Yes' : 'No',
+      Battery: Math.random() < 0.5 ? 'Yes' : 'No',
+      Screen: Math.random() < 0.5 ? 'Yes' : 'No',
+      Audio: Math.random() < 0.5 ? 'Yes' : 'No',
+      WiFi: Math.random() < 0.5 ? 'Yes' : 'No',
+      Camera: Math.random() < 0.5 ? 'Yes' : 'No'
+    },
+    advancePayment: Math.floor(Math.random() * 200)
+  };
+};
+
+export const generateTestData = () => {
+  const testData = [];
+  for (let i = 0; i < 50; i++) {
+    testData.push(generateRandomCustomer());
   }
+  writeExcelFile(testData);
+  return testData;
 };
 
 export const fetchCustomersFromExcel = async () => {
-  initializeData();
+  customerData = readExcelFile();
+  if (customerData.length === 0) {
+    customerData = generateTestData();
+  }
   return customerData;
 };
 
 export const addCustomerData = async (newCustomer) => {
-  const customerWithId = { 
-    ...newCustomer, 
-    id: uuidv4(), 
-    customerId: newCustomer.customerId || uuidv4(),
-    date: new Date().toISOString(),
-    serialNumber: `JOB-${customerData.length + 1}`
-  };
-  customerData.push(customerWithId);
+  customerData.push(newCustomer);
   writeExcelFile(customerData);
   return customerData;
 };
 
 export const editCustomerData = async (customerId, updatedData) => {
   customerData = customerData.map(customer => 
-    customer.id === customerId ? { ...customer, ...updatedData, date: new Date().toISOString() } : customer
+    customer.id === customerId ? { ...customer, ...updatedData } : customer
   );
   writeExcelFile(customerData);
   return customerData;
@@ -94,45 +103,45 @@ export const saveJobToExcel = async (jobData) => {
 };
 
 export const fetchCustomerJobs = async (customerId) => {
-  initializeData();
+  await fetchCustomersFromExcel();
   return customerData.filter(job => job.customerId === customerId);
 };
 
-export const generateJobPDF = async (jobData, signature) => {
-  console.log('Generating PDF for job:', jobData);
-  console.log('With signature:', signature);
-  return new Blob(['Simulated PDF content'], { type: 'application/pdf' });
-};
-
-export const sendWhatsAppMessage = async (phoneNumber, pdfBlob) => {
-  console.log(`Simulating sending WhatsApp message to ${phoneNumber}`);
-  console.log('PDF Blob:', pdfBlob);
-  return 'MESSAGE_SID_12345';
-};
-
 export const fetchRevenueData = async () => {
-  initializeData();
+  await fetchCustomersFromExcel();
   const productRevenue = {};
   const dailyRevenue = {};
   const monthlyRevenue = {};
 
   customerData.forEach(job => {
-    productRevenue[job.device] = (productRevenue[job.device] || 0) + 100;
-    const jobDate = new Date(job.date).toISOString().split('T')[0];
-    dailyRevenue[jobDate] = (dailyRevenue[jobDate] || 0) + 100;
+    const revenue = job.advancePayment || 100;
+    productRevenue[job.device] = (productRevenue[job.device] || 0) + revenue;
+    const jobDate = job.date.split('T')[0];
+    dailyRevenue[jobDate] = (dailyRevenue[jobDate] || 0) + revenue;
     const month = jobDate.substring(0, 7);
-    monthlyRevenue[month] = (monthlyRevenue[month] || 0) + 100;
+    monthlyRevenue[month] = (monthlyRevenue[month] || 0) + revenue;
   });
 
   return {
     productRevenue: Object.entries(productRevenue).map(([name, revenue]) => ({ name, revenue })),
     dailyRevenue: Object.entries(dailyRevenue).map(([date, revenue]) => ({ date, revenue })),
     monthlyRevenue: Object.entries(monthlyRevenue).map(([month, revenue]) => ({ month, revenue })),
-    highestPayments: customerData.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5).map(job => ({
-      date: new Date(job.date).toISOString().split('T')[0],
-      amount: 100
+    highestPayments: customerData.sort((a, b) => (b.advancePayment || 0) - (a.advancePayment || 0)).slice(0, 5).map(job => ({
+      date: job.date.split('T')[0],
+      amount: job.advancePayment || 100
     }))
   };
 };
 
-initializeData();
+export const getDeviceProblems = () => [
+  'Screen Repair',
+  'Battery Replacement',
+  'Water Damage',
+  'Software Issue',
+  'Camera Repair',
+  'Charging Port Repair',
+  'Speaker Repair',
+  'Microphone Repair',
+  'Button Repair',
+  'Data Recovery'
+];

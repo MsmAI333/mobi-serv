@@ -15,7 +15,7 @@ const CustomerSearch = ({ onSelect }) => {
   });
 
   const searchResults = allCustomers?.filter(customer => 
-    (customer.name && customer.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (customer.customerName && customer.customerName.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (customer.phone && customer.phone.includes(searchQuery)) ||
     (customer.email && customer.email.toLowerCase().includes(searchQuery.toLowerCase()))
   ) || [];
@@ -49,7 +49,7 @@ const CustomerSearch = ({ onSelect }) => {
               className="p-2 hover:bg-gray-100 cursor-pointer"
               onClick={() => handleSearchResultClick(result)}
             >
-              {result.name} - {result.phone}
+              {result.customerName} - {result.phone}
             </div>
           ))}
         </div>

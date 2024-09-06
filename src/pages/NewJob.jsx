@@ -9,7 +9,7 @@ import { Camera } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import CustomerSearch from '../components/CustomerSearch';
-import { saveJobToExcel } from '../utils/dataUtils';
+import { saveJobToExcel, getDeviceProblems } from '../utils/dataUtils';
 import SignatureCanvas from 'react-signature-canvas';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -23,12 +23,12 @@ const NewJob = () => {
     deviceType: '',
     selectedProblem: '',
     deviceConditions: {
-      Charging: '',
-      Battery: '',
-      Screen: '',
-      Audio: '',
-      WiFi: '',
-      Camera: ''
+      Charging: 'No',
+      Battery: 'No',
+      Screen: 'No',
+      Audio: 'No',
+      WiFi: 'No',
+      Camera: 'No'
     },
     devicePhoto: null,
     advancePayment: ''
@@ -78,6 +78,16 @@ const NewJob = () => {
   const handleConfirmJob = () => {
     setShowSignatureDialog(false);
     mutation.mutate({ ...jobData, signature });
+  };
+
+  const toggleDeviceCondition = (condition) => {
+    setJobData(prev => ({
+      ...prev,
+      deviceConditions: {
+        ...prev.deviceConditions,
+        [condition]: prev.deviceConditions[condition] === 'Yes' ? 'No' : 'Yes'
+      }
+    }));
   };
 
   return (
@@ -142,35 +152,34 @@ const NewJob = () => {
             </div>
             <div>
               <Label htmlFor="selectedProblem">Problem</Label>
-              <Input
-                id="selectedProblem"
+              <Select
                 value={jobData.selectedProblem}
-                onChange={(e) => handleInputChange('selectedProblem', e.target.value)}
-                required
-              />
+                onValueChange={(value) => handleInputChange('selectedProblem', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select problem" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getDeviceProblems().map((problem) => (
+                    <SelectItem key={problem} value={problem}>{problem}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Device Condition</Label>
-              {Object.entries(jobData.deviceConditions).map(([item, condition]) => (
-                <div key={item} className="flex items-center space-x-2 mt-2">
-                  <span>{item}</span>
-                  <Select
-                    value={condition}
-                    onValueChange={(value) => setJobData(prev => ({
-                      ...prev,
-                      deviceConditions: { ...prev.deviceConditions, [item]: value }
-                    }))}
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {Object.entries(jobData.deviceConditions).map(([item, condition]) => (
+                  <Button
+                    key={item}
+                    type="button"
+                    variant={condition === 'Yes' ? 'default' : 'outline'}
+                    onClick={() => toggleDeviceCondition(item)}
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Yes">Yes</SelectItem>
-                      <SelectItem value="No">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              ))}
+                    {item}: {condition}
+                  </Button>
+                ))}
+              </div>
             </div>
             <div>
               <Label>Device Photo</Label>
