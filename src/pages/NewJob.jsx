@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera } from 'lucide-react';
 import Navigation from '../components/Navigation';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import CustomerSearch from '../components/CustomerSearch';
-import { saveJobToExcel, generateJobPDF, sendWhatsAppMessage } from '../utils/dataUtils';
+import { saveJobToExcel } from '../utils/dataUtils';
 import SignatureCanvas from 'react-signature-canvas';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -34,25 +34,17 @@ const NewJob = () => {
     advancePayment: ''
   });
 
-  const [existingCustomer, setExistingCustomer] = useState(null);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
   const [signature, setSignature] = useState(null);
   const fileInputRef = useRef(null);
   const signatureRef = useRef(null);
 
-  const { data: customers, isLoading: customersLoading } = useQuery({
-    queryKey: ['customers'],
-    queryFn: fetchCustomersFromExcel
-  });
-
   const mutation = useMutation({
     mutationFn: async (data) => {
       const savedJob = await saveJobToExcel(data);
-      const pdfBlob = await generateJobPDF(savedJob, signature);
-      await sendWhatsAppMessage(savedJob.phoneNumber, pdfBlob);
       return savedJob;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(['customers']);
       queryClient.invalidateQueries(['jobs']);
       navigate('/');
@@ -61,24 +53,6 @@ const NewJob = () => {
 
   const handleInputChange = (field, value) => {
     setJobData(prev => ({ ...prev, [field]: value }));
-    if (field === 'customerName' || field === 'phoneNumber' || field === 'emailAddress') {
-      const found = customers?.find(c => 
-        c.name.toLowerCase() === value.toLowerCase() ||
-        c.phone === value ||
-        c.email.toLowerCase() === value.toLowerCase()
-      );
-      if (found) {
-        setExistingCustomer(found);
-        setJobData(prev => ({
-          ...prev,
-          customerName: found.name,
-          phoneNumber: found.phone,
-          emailAddress: found.email
-        }));
-      } else {
-        setExistingCustomer(null);
-      }
-    }
   };
 
   const handleFileChange = (e) => {
@@ -106,8 +80,6 @@ const NewJob = () => {
     mutation.mutate({ ...jobData, signature });
   };
 
-  if (customersLoading) return <div>Loading...</div>;
-
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="max-w-3xl mx-auto">
@@ -118,7 +90,6 @@ const NewJob = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <CustomerSearch onSelect={(customer) => {
-              setExistingCustomer(customer);
               setJobData(prev => ({
                 ...prev,
                 customerName: customer.name,
@@ -126,7 +97,107 @@ const NewJob = () => {
                 emailAddress: customer.email
               }));
             }} />
-            {/* ... (rest of the form fields) ... */}
+            <div>
+              <Label htmlFor="customerName">Customer Name</Label>
+              <Input
+                id="customerName"
+                value={jobData.customerName}
+                onChange={(e) => handleInputChange('customerName', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="phoneNumber">Phone Number</Label>
+              <Input
+                id="phoneNumber"
+                value={jobData.phoneNumber}
+                onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="emailAddress">Email Address</Label>
+              <Input
+                id="emailAddress"
+                value={jobData.emailAddress}
+                onChange={(e) => handleInputChange('emailAddress', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="deviceType">Device Type</Label>
+              <Select
+                value={jobData.deviceType}
+                onValueChange={(value) => handleInputChange('deviceType', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select device type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="phone">Phone</SelectItem>
+                  <SelectItem value="laptop">Laptop</SelectItem>
+                  <SelectItem value="tablet">Tablet</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="selectedProblem">Problem</Label>
+              <Input
+                id="selectedProblem"
+                value={jobData.selectedProblem}
+                onChange={(e) => handleInputChange('selectedProblem', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label>Device Condition</Label>
+              {Object.entries(jobData.deviceConditions).map(([item, condition]) => (
+                <div key={item} className="flex items-center space-x-2 mt-2">
+                  <span>{item}</span>
+                  <Select
+                    value={condition}
+                    onValueChange={(value) => setJobData(prev => ({
+                      ...prev,
+                      deviceConditions: { ...prev.deviceConditions, [item]: value }
+                    }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Yes">Yes</SelectItem>
+                      <SelectItem value="No">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+            </div>
+            <div>
+              <Label>Device Photo</Label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+              />
+              <Button type="button" onClick={() => fileInputRef.current.click()}>
+                <Camera className="mr-2 h-4 w-4" />
+                Upload Photo
+              </Button>
+              {jobData.devicePhoto && (
+                <img src={jobData.devicePhoto} alt="Device" className="mt-2 max-w-full h-auto" />
+              )}
+            </div>
+            <div>
+              <Label htmlFor="advancePayment">Advance Payment</Label>
+              <Input
+                id="advancePayment"
+                type="number"
+                value={jobData.advancePayment}
+                onChange={(e) => handleInputChange('advancePayment', e.target.value)}
+              />
+            </div>
             <div className="flex justify-end">
               <Button type="submit" disabled={mutation.isLoading}>
                 {mutation.isLoading ? 'Creating...' : 'Create Job Sheet'}
