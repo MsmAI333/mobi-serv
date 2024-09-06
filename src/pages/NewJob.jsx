@@ -87,6 +87,104 @@ const NewJob = () => {
     }));
   };
 
+  const renderForm = () => (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <CustomerSearch onSelect={(customer) => {
+        setJobData(prev => ({
+          ...prev,
+          customerName: customer.customerName,
+          phoneNumber: customer.phone,
+          emailAddress: customer.email
+        }));
+      }} />
+      <Input
+        placeholder="Customer Name"
+        value={jobData.customerName}
+        onChange={(e) => handleInputChange('customerName', e.target.value)}
+        required
+      />
+      <Input
+        placeholder="Phone Number"
+        value={jobData.phoneNumber}
+        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+        required
+      />
+      <Input
+        placeholder="Email Address"
+        value={jobData.emailAddress}
+        onChange={(e) => handleInputChange('emailAddress', e.target.value)}
+        required
+      />
+      <Select
+        value={jobData.deviceType}
+        onValueChange={(value) => handleInputChange('deviceType', value)}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select device type" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="phone">Phone</SelectItem>
+          <SelectItem value="laptop">Laptop</SelectItem>
+          <SelectItem value="tablet">Tablet</SelectItem>
+        </SelectContent>
+      </Select>
+      <Select
+        value={jobData.selectedProblem}
+        onValueChange={(value) => handleInputChange('selectedProblem', value)}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select problem" />
+        </SelectTrigger>
+        <SelectContent>
+          {getDeviceProblems().map((problem) => (
+            <SelectItem key={problem} value={problem}>{problem}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <div>
+        <Label>Device Condition</Label>
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          {Object.entries(jobData.deviceConditions).map(([item, condition]) => (
+            <Button
+              key={item}
+              type="button"
+              variant={condition ? 'default' : 'outline'}
+              onClick={() => toggleDeviceCondition(item)}
+            >
+              {item}: {condition ? 'Yes' : 'No'}
+            </Button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <Label>Device Photo</Label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+        />
+        <Button type="button" onClick={() => fileInputRef.current.click()}>
+          <Camera className="mr-2 h-4 w-4" />
+          Take Photo
+        </Button>
+        {jobData.devicePhoto && (
+          <img src={jobData.devicePhoto} alt="Device" className="mt-2 max-w-full h-auto" />
+        )}
+      </div>
+      <Input
+        placeholder="Advance Payment"
+        type="number"
+        value={jobData.advancePayment}
+        onChange={(e) => handleInputChange('advancePayment', e.target.value)}
+      />
+      <Button type="submit" disabled={mutation.isLoading}>
+        {mutation.isLoading ? 'Creating...' : 'Create Job Sheet'}
+      </Button>
+    </form>
+  );
+
   return (
     <div className="container mx-auto py-10 px-4">
       <Card>
@@ -95,101 +193,7 @@ const NewJob = () => {
           <Navigation />
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <CustomerSearch onSelect={(customer) => {
-              setJobData(prev => ({
-                ...prev,
-                customerName: customer.name,
-                phoneNumber: customer.phone,
-                emailAddress: customer.email
-              }));
-            }} />
-            <Input
-              placeholder="Customer Name"
-              value={jobData.customerName}
-              onChange={(e) => handleInputChange('customerName', e.target.value)}
-              required
-            />
-            <Input
-              placeholder="Phone Number"
-              value={jobData.phoneNumber}
-              onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-              required
-            />
-            <Input
-              placeholder="Email Address"
-              value={jobData.emailAddress}
-              onChange={(e) => handleInputChange('emailAddress', e.target.value)}
-              required
-            />
-            <Select
-              value={jobData.deviceType}
-              onValueChange={(value) => handleInputChange('deviceType', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select device type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="phone">Phone</SelectItem>
-                <SelectItem value="laptop">Laptop</SelectItem>
-                <SelectItem value="tablet">Tablet</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={jobData.selectedProblem}
-              onValueChange={(value) => handleInputChange('selectedProblem', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select problem" />
-              </SelectTrigger>
-              <SelectContent>
-                {getDeviceProblems().map((problem) => (
-                  <SelectItem key={problem} value={problem}>{problem}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div>
-              <Label>Device Condition</Label>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {Object.entries(jobData.deviceConditions).map(([item, condition]) => (
-                  <Button
-                    key={item}
-                    type="button"
-                    variant={condition ? 'default' : 'outline'}
-                    onClick={() => toggleDeviceCondition(item)}
-                  >
-                    {item}: {condition ? 'Yes' : 'No'}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label>Device Photo</Label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-              />
-              <Button type="button" onClick={() => fileInputRef.current.click()}>
-                <Camera className="mr-2 h-4 w-4" />
-                Take Photo
-              </Button>
-              {jobData.devicePhoto && (
-                <img src={jobData.devicePhoto} alt="Device" className="mt-2 max-w-full h-auto" />
-              )}
-            </div>
-            <Input
-              placeholder="Advance Payment"
-              type="number"
-              value={jobData.advancePayment}
-              onChange={(e) => handleInputChange('advancePayment', e.target.value)}
-            />
-            <Button type="submit" disabled={mutation.isLoading}>
-              {mutation.isLoading ? 'Creating...' : 'Create Job Sheet'}
-            </Button>
-          </form>
+          {renderForm()}
         </CardContent>
       </Card>
 

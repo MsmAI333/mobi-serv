@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
 import * as XLSX from 'xlsx';
+import { v4 as uuidv4 } from 'uuid';
 
 const EXCEL_FILE_PATH = '/data.xlsx';
 
@@ -24,43 +24,10 @@ const writeExcelFile = (data) => {
   XLSX.writeFile(workbook, EXCEL_FILE_PATH);
 };
 
-const generateRandomCustomer = () => {
-  const devices = ['iPhone', 'Samsung', 'Google Pixel', 'OnePlus'];
-  const problems = ['Screen Repair', 'Battery Replacement', 'Water Damage', 'Software Issue'];
-  const statuses = ['Pending', 'In Progress', 'Completed'];
-
-  return {
-    id: uuidv4(),
-    customerId: uuidv4(),
-    customerName: `Customer ${Math.floor(Math.random() * 1000)}`,
-    email: `customer${Math.floor(Math.random() * 1000)}@example.com`,
-    phone: `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-    device: devices[Math.floor(Math.random() * devices.length)],
-    problem: problems[Math.floor(Math.random() * problems.length)],
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    date: new Date().toISOString(),
-    serialNumber: `JOB-${Math.floor(Math.random() * 10000)}`,
-    photoUrl: `https://example.com/job_photo.jpg`,
-    pdfUrl: `https://example.com/job_report.pdf`,
-    deviceConditions: {
-      Charging: Math.random() < 0.5 ? 'Yes' : 'No',
-      Battery: Math.random() < 0.5 ? 'Yes' : 'No',
-      Screen: Math.random() < 0.5 ? 'Yes' : 'No',
-      Audio: Math.random() < 0.5 ? 'Yes' : 'No',
-      WiFi: Math.random() < 0.5 ? 'Yes' : 'No',
-      Camera: Math.random() < 0.5 ? 'Yes' : 'No'
-    },
-    advancePayment: Math.floor(Math.random() * 200)
-  };
-};
-
-export const generateTestData = () => {
-  const testData = [];
-  for (let i = 0; i < 50; i++) {
-    testData.push(generateRandomCustomer());
-  }
-  writeExcelFile(testData);
-  return testData;
+export const generateReferenceNumber = (prefix) => {
+  const timestamp = Date.now().toString().slice(-6);
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  return `${prefix}${timestamp}${random}`;
 };
 
 export const fetchCustomersFromExcel = async () => {
@@ -96,7 +63,7 @@ export const saveJobToExcel = async (jobData) => {
     id: uuidv4(),
     ...jobData,
     date: new Date().toISOString(),
-    serialNumber: generateJobNumber()
+    jobNumber: generateReferenceNumber('MSJN')
   };
   await addCustomerData(newJob);
   return newJob;
@@ -146,9 +113,31 @@ export const getDeviceProblems = () => [
   'Data Recovery'
 ];
 
-export const generateJobNumber = () => {
-  const prefix = 'MSJN';
-  const timestamp = Date.now().toString().slice(-6);
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  return `${prefix}${timestamp}${random}`;
+const generateTestData = () => {
+  const testData = [];
+  for (let i = 0; i < 50; i++) {
+    testData.push({
+      id: uuidv4(),
+      customerId: generateReferenceNumber('MSC'),
+      customerName: `Customer ${i + 1}`,
+      email: `customer${i + 1}@example.com`,
+      phone: `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+      device: ['iPhone', 'Samsung', 'Google Pixel', 'OnePlus'][Math.floor(Math.random() * 4)],
+      problem: getDeviceProblems()[Math.floor(Math.random() * getDeviceProblems().length)],
+      status: ['Pending', 'In Progress', 'Completed'][Math.floor(Math.random() * 3)],
+      date: new Date().toISOString(),
+      jobNumber: generateReferenceNumber('MSJN'),
+      advancePayment: Math.floor(Math.random() * 200),
+      deviceConditions: {
+        Charging: Math.random() < 0.5 ? 'Yes' : 'No',
+        Battery: Math.random() < 0.5 ? 'Yes' : 'No',
+        Screen: Math.random() < 0.5 ? 'Yes' : 'No',
+        Audio: Math.random() < 0.5 ? 'Yes' : 'No',
+        WiFi: Math.random() < 0.5 ? 'Yes' : 'No',
+        Camera: Math.random() < 0.5 ? 'Yes' : 'No'
+      }
+    });
+  }
+  writeExcelFile(testData);
+  return testData;
 };
