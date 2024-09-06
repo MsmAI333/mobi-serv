@@ -15,9 +15,9 @@ const CustomerSearch = ({ onSelect }) => {
   });
 
   const searchResults = allCustomers?.filter(customer => 
-    customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    customer.phone.includes(searchQuery) ||
-    customer.email.toLowerCase().includes(searchQuery.toLowerCase())
+    (customer.name && customer.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (customer.phone && customer.phone.includes(searchQuery)) ||
+    (customer.email && customer.email.toLowerCase().includes(searchQuery.toLowerCase()))
   ) || [];
 
   const handleSearchResultClick = (customer) => {
@@ -27,6 +27,9 @@ const CustomerSearch = ({ onSelect }) => {
       navigate(`/customers/${customer.id}`);
     }
   };
+
+  if (isLoading) return <div>Loading customers...</div>;
+  if (isError) return <div>Error loading customers</div>;
 
   return (
     <div className="relative">
