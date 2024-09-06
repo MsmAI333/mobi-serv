@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Camera } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import CustomerSearch from '../components/CustomerSearch';
-import { saveJobToExcel, getDeviceProblems, generateJobNumber } from '../utils/dataUtils';
+import { saveJobToExcel, getDeviceProblems } from '../utils/dataUtils';
 import SignatureCanvas from 'react-signature-canvas';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -40,11 +40,7 @@ const NewJob = () => {
   const signatureRef = useRef(null);
 
   const mutation = useMutation({
-    mutationFn: async (data) => {
-      const jobNumber = await generateJobNumber();
-      const savedJob = await saveJobToExcel({ ...data, jobNumber });
-      return savedJob;
-    },
+    mutationFn: saveJobToExcel,
     onSuccess: () => {
       queryClient.invalidateQueries(['customers']);
       queryClient.invalidateQueries(['jobs']);

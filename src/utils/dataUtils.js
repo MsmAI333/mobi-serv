@@ -96,7 +96,7 @@ export const saveJobToExcel = async (jobData) => {
     id: uuidv4(),
     ...jobData,
     date: new Date().toISOString(),
-    serialNumber: `JOB-${customerData.length + 1}`
+    serialNumber: generateJobNumber()
   };
   await addCustomerData(newJob);
   return newJob;
@@ -145,3 +145,10 @@ export const getDeviceProblems = () => [
   'Button Repair',
   'Data Recovery'
 ];
+
+export const generateJobNumber = () => {
+  const prefix = 'MSJN';
+  const timestamp = Date.now().toString().slice(-6);
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  return `${prefix}${timestamp}${random}`;
+};
